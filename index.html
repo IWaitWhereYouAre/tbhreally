@@ -398,6 +398,15 @@
   cursor:grab;
   z-index:4;
   will-change: transform, left, top;
+
+  /* IMPORTANT */
+  font-family:
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Noto Color Emoji",
+    "Twemoji Mozilla",
+    system-ui,
+    sans-serif;
 }
 .sticker:active{ cursor:grabbing; }
 
@@ -599,28 +608,91 @@
           <div class="pill">
             Symbol:
             <select id="stickerSelect">
-              <option value="💌">💌 Love Letter</option>
-              <option value="❣️">❣️ Heart Exclamation</option>
-              <option value="🩷" selected>🩷 Heart</option>
-              <option value="❤️">❤️ Red Heart</option>
-              <option value="🧡">🧡 Orange Heart</option>
-              <option value="💛">💛 Yellow Heart</option>
-              <option value="💚">💚 Green Heart</option>
-              <option value="💙">💙 Blue Heart</option>
-              <option value="🩵">🩵 Light Blue Heart</option>
-              <option value="💜">💜 Purple Heart</option>
-              <option value="🤎">🤎 Brown Heart</option>
-              <option value="🖤">🖤 Black Heart</option>
-              <option value="🩶">🩶 Grey Heart</option>
-              <option value="🤍">🤍 White Heart</option>
-              <option value="✨">✨ Sparkle</option>
-              <option value="💫">💫 Twinkle</option>
-              <option value="🫧">🫧 Bubbles</option>
-              <option value="🎀">🎀 Ribbon</option>
-              <option value="🪽">🪽 Wings</option>
-              <option value="⭐">⭐ Star</option>
-              <option value="☁️">☁️ Cloud</option>
-            </select>
+  <!-- ♡ Symbol Hearts -->
+  <option value="♡">♡ Simple Heart</option>
+  <option value="♥">♥ Classic Heart</option>
+  <option value="❥">❥ Fancy Heart</option>
+  <option value="❣">❣ Heart Exclamation</option>
+  <option value="❤">❤ Solid Heart</option>
+  <option value="ෆ">ෆ Curly Heart</option>
+  <option value="♡⃝">♡⃝ Circled Heart</option>
+  <option value="♡̷">♡̷ Striped Heart</option>
+  <option value="♡̶">♡̶ Crossed Heart</option>
+  <option value="♡̆̈">♡̆̈ Soft Heart</option>
+  <option value="ʚ♡ɞ">ʚ♡ɞ Angel Heart</option>
+  <option value="(♡˙︶˙♡)">(♡˙︶˙♡) Happy Heart</option>
+
+  <!-- 🩷 Emoji Hearts -->
+  <option value="🩷">🩷 Pink Heart</option>
+  <option value="💞">💞 Revolving Hearts</option>
+  <option value="❤️">❤️ Red Heart</option>
+  <option value="🧡">🧡 Orange Heart</option>
+  <option value="💛">💛 Yellow Heart</option>
+  <option value="💚">💚 Green Heart</option>
+  <option value="💙">💙 Blue Heart</option>
+  <option value="🩵">🩵 Light Blue Heart</option>
+  <option value="💜">💜 Purple Heart</option>
+  <option value="🤎">🤎 Brown Heart</option>
+  <option value="🖤">🖤 Black Heart</option>
+  <option value="🩶">🩶 Grey Heart</option>
+  <option value="🤍">🤍 White Heart</option>
+
+  <!-- 💐 Flowers & Nature -->
+  <option value="🌸">🌸 Blossom</option>
+  <option value="🌷">🌷 Tulip</option>
+  <option value="🌼">🌼 Daisy</option>
+  <option value="🌺">🌺 Hibiscus</option>
+  <option value="💐">💐 Bouquet</option>
+  <option value="✿">✿ Flower</option>
+  <option value="❀">❀ Blossom Symbol</option>
+  <option value="❁">❁ Floral</option>
+  <option value="❃">❃ Petal</option>
+  <option value="❋">❋ Fancy Flower</option>
+  <option value="𓇼">𓇼 Botanical</option>
+  <option value="ꕥ">ꕥ Ornament Flower</option>
+  <option value="ꕤ">ꕤ Soft Bloom</option>
+  <option value="ꕦ">ꕦ Floral Dot</option>
+  <option value="ꕧ">ꕧ Floral Ring</option>
+
+  <!-- ✨ Sparkles -->
+  <option value="✧">✧ Sparkle</option>
+  <option value="✦">✦ Star Spark</option>
+  <option value="✨">✨ Sparkles</option>
+  <option value="☆">☆ Star</option>
+  <option value="★">★ Solid Star</option>
+  <option value="⭑">⭑ Magic Star</option>
+  <option value="⭒">⭒ Light Star</option>
+  <option value="⋆｡˚☾˚｡⋆">⋆｡˚☾˚｡⋆ Moon Glow</option>
+  <option value="୨୧">୨୧ Ribbon</option>
+  <option value="୭̥⋆*｡">୭̥⋆*｡ Soft Spark</option>
+  <option value="꒰ঌ໒꒱">꒰ঌ໒꒱ Wings</option>
+  <option value="⸝⸝⸝">⸝⸝⸝ Tiny Lines</option>
+  <option value="─── ♡ ───">─── ♡ ─── Divider</option>
+  <option value="﹏﹏✿﹏﹏">﹏﹏✿﹏﹏ Floral Divider</option>
+  <option value="• · ˚ ✧">• · ˚ ✧ Dots</option>
+
+  <!-- ʕ•ᴥ•ʔ Cute Faces -->
+  <option value="(｡･ω･｡)">(｡･ω･｡) Soft Face</option>
+  <option value="(≧◡≦)">(≧◡≦) Happy Face</option>
+  <option value="(๑˃ᴗ˂)ﻭ">(๑˃ᴗ˂)ﻭ Cheer</option>
+  <option value="૮ ˶ᵔ ᵕ ᵔ˶ ა">૮ ˶ᵔ ᵕ ᵔ˶ ა Bunny</option>
+  <option value="ʕ•ᴥ•ʔ">ʕ•ᴥ•ʔ Bear</option>
+  <option value="(づ｡◕‿‿◕｡)づ">(づ｡◕‿‿◕｡)づ Hug</option>
+
+
+  <!-- 🌷 Cute Emoji -->
+  <option value="💌">💌 Love Letter</option>
+  <option value="🍓">🍓 Strawberry</option>
+  <option value="🍒">🍒 Cherries</option>
+  <option value="🎀">🎀 Ribbon</option>
+  <option value="☁️">☁️ Cloud</option>
+  <option value="🫧">🫧 Bubbles</option>
+  <option value="🧸">🧸 Teddy</option>
+  <option value="🪄">🪄 Magic</option>
+  <option value="🦋">🦋 Butterfly</option>
+
+</select>
+
           </div>
 
           <div class="pill">
