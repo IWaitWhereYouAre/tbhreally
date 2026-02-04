@@ -344,8 +344,55 @@
       display:block;
     }
 
-    /* Hide frame in decor-only mode */
-    .card-canvas[data-mode="decor"] .photo-frame{ display:none !important; }
+    /* =========================
+   MODE STYLING
+   ========================= */
+
+/* Hybrid: keep photo frame */
+.card-canvas[data-mode="hybrid"] .photo-frame{ display:block; }
+
+/* Decor-only: remove photo frame AND make the canvas look complete (no "missing cutout") */
+.card-canvas[data-mode="decor"] .photo-frame{ display:none !important; }
+
+/* Give decor mode a dedicated “card art” area so it doesn't feel empty */
+.card-canvas[data-mode="decor"]{
+  background:
+    radial-gradient(220px 180px at 30% 25%, rgba(197,160,89,0.16), transparent 60%),
+    radial-gradient(260px 220px at 70% 35%, rgba(232,213,209,0.22), transparent 55%),
+    radial-gradient(320px 260px at 50% 85%, rgba(26,42,29,0.10), transparent 60%),
+    rgba(255,255,255,0.70);
+  background-blend-mode: normal;
+}
+
+/* Add an inner “ornament panel” where the photo would have been */
+.card-canvas[data-mode="decor"]::before{
+  content:"";
+  position:absolute;
+  left:7.5%;
+  right:7.5%;
+  top:10%;
+  height:46%;
+  border-radius:12px;
+  border:1px solid rgba(197,160,89,0.25);
+  background:
+    linear-gradient(135deg, rgba(248,245,240,0.85), rgba(255,255,255,0.65)),
+    url("https://www.transparenttextures.com/patterns/natural-paper.png");
+  box-shadow:0 10px 22px rgba(0,0,0,0.035);
+  pointer-events:none;
+}
+
+/* Optional: a subtle crest in decor mode (looks fancy instead of empty) */
+.card-canvas[data-mode="decor"]::after{
+  content:"❦";
+  position:absolute;
+  left:50%;
+  top:33%;
+  transform:translate(-50%,-50%);
+  font-family:'Playfair Display',serif;
+  font-size:clamp(40px, 10vw, 72px);
+  color:rgba(197,160,89,0.35);
+  pointer-events:none;
+}
 
     .decor-layer{
       position:absolute;
@@ -921,16 +968,21 @@
 
   const stickers = [];
 
-  function setMode(mode) {
-    const isHybrid = mode === "hybrid";
-    cardCanvas.dataset.mode = mode;
-    photoInputWrap.style.display = isHybrid ? "inline-flex" : "none";
-    photoFrame.style.display = isHybrid ? "block" : "none";
-    if (!isHybrid) {
-      userPhoto.removeAttribute("src");
-      photoInput.value = "";
-    }
+function setMode(mode) {
+  const isHybrid = mode === "hybrid";
+  cardCanvas.dataset.mode = mode;
+
+  photoInputWrap.style.display = isHybrid ? "inline-flex" : "none";
+
+  // In decor mode, fully clear photo so it never shows up in capture
+  if (!isHybrid) {
+    userPhoto.removeAttribute("src");
+    userPhoto.style.display = "none";
+    photoInput.value = "";
+  } else {
+    userPhoto.style.display = "block";
   }
+}
 
   modeSelect.addEventListener("change", (e) => setMode(e.target.value));
   setMode(modeSelect.value);
