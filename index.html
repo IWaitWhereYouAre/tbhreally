@@ -402,31 +402,45 @@
 .sticker:active{ cursor:grabbing; }
 
 /* =========================
-   EMOJIS-ONLY = NO FRAME AT ALL
+   MODE STYLING 
    ========================= */
 
+/* Hybrid: show photo frame */
+.card-canvas[data-mode="hybrid"] .photo-frame { display:block; }
+
+/* Decor-only: hide photo frame completely */
+.card-canvas[data-mode="decor"] .photo-frame { display:none !important; }
+
+/* Decor-only: still keep the SAME canvas size + clipping */
 .card-canvas[data-mode="decor"]{
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  aspect-ratio: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
+  /* KEEP the canvas geometry so dragging works */
+  overflow:hidden;             /* clip to card borders */
+  border-radius:14px;
+  border:1px solid rgba(197,160,89,0.25);
+  aspect-ratio: 4 / 5;
+  max-height: 52vh;
+
+  /* Just change the look (no inner photo panel) */
+  background:
+    radial-gradient(700px 520px at 20% 15%, rgba(197,160,89,0.14), transparent 60%),
+    radial-gradient(680px 520px at 80% 28%, rgba(232,213,209,0.20), transparent 58%),
+    radial-gradient(760px 620px at 45% 90%, rgba(26,42,29,0.10), transparent 62%),
+    rgba(255,255,255,0.72);
 }
 
-/* Remove any pseudo decorations */
-.card-canvas[data-mode="decor"]::before,
-.card-canvas[data-mode="decor"]::after{
-  content: none !important;
-}
-.card-canvas[data-mode="decor"]{
-  overflow: visible !important;
+/* Optional paper texture over the whole canvas */
+.card-canvas[data-mode="decor"]::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:url("https://www.transparenttextures.com/patterns/natural-paper.png");
+  opacity:0.35;
+  mix-blend-mode:multiply;
+  pointer-events:none;
 }
 
-.decor-layer{
-  inset: 0;
-}
+/* Remove any pseudo decorations you don't want */
+.card-canvas[data-mode="decor"]::after{ content:none !important; }
 
     /* =========================
        BUTTONS / CONTROLS
@@ -1042,20 +1056,6 @@ function removeSticker(id) {
   if (el) el.remove();
 }
 
-function clampToCanvas(x, y, el) {
-  // If you want "free anywhere INSIDE card" keep clamp ON:
-  const host = decorLayer.getBoundingClientRect();
-  const rect = el.getBoundingClientRect();
-  const halfW = rect.width / 2;
-  const halfH = rect.height / 2;
-  return {
-    x: Math.max(halfW, Math.min(host.width - halfW, x)),
-    y: Math.max(halfH, Math.min(host.height - halfH, y)),
-  };
-
-  // If you want "free even outside card" (NOT recommended), return {x,y}
-}
-
 function addStickerAtPx(x, y) {
   const emoji = stickerSelect.value || "🩷";
   const size = Number(stickerSize.value || 34);
@@ -1279,4 +1279,3 @@ window.addEventListener("resize", rerenderFromModel);
 </script>
 </body>
 </html>
-
