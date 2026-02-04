@@ -390,12 +390,14 @@
   position:absolute;
   left:50%;
   top:50%;
-  transform:translate(-50%,-50%);
+  transform: translate(-50%,-50%) rotate(0deg) scale(1);
+  transform-origin: center;
   user-select:none;
   touch-action:none;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,0.08));
   cursor:grab;
-  z-index:4; /* above photo and decor */
+  z-index:4;
+  will-change: transform, left, top;
 }
 .sticker:active{ cursor:grabbing; }
 
@@ -1040,6 +1042,20 @@ function removeSticker(id) {
   if (el) el.remove();
 }
 
+function clampToCanvas(x, y, el) {
+  // If you want "free anywhere INSIDE card" keep clamp ON:
+  const host = decorLayer.getBoundingClientRect();
+  const rect = el.getBoundingClientRect();
+  const halfW = rect.width / 2;
+  const halfH = rect.height / 2;
+  return {
+    x: Math.max(halfW, Math.min(host.width - halfW, x)),
+    y: Math.max(halfH, Math.min(host.height - halfH, y)),
+  };
+
+  // If you want "free even outside card" (NOT recommended), return {x,y}
+}
+
 function addStickerAtPx(x, y) {
   const emoji = stickerSelect.value || "🩷";
   const size = Number(stickerSize.value || 34);
@@ -1048,64 +1064,170 @@ function addStickerAtPx(x, y) {
   el.className = "sticker";
   el.textContent = emoji;
   el.style.fontSize = size + "px";
+
+  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+  el.dataset.id = id;
+
+  // model
+  const s = {
+    id,
+    emoji,
+    sizePx: size,
+    xPct: 0.5,
+    yPct: 0.5,
+    rot: 0,     // degrees
+    scale: 1
+  };
+  stickers.push(s);
+
   decorLayer.appendChild(el);
 
+  // place
+  const host = decorLayer.getBoundingClientRect();
   const clamped = clampToCanvas(x, y, el);
   el.style.left = clamped.x + "px";
   el.style.top = clamped.y + "px";
+  s.xPct = clamped.x / host.width;
+  s.yPct = clamped.y / host.height;
 
-  const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
-  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
-  stickers.push({ id, emoji, xPct, yPct, sizePx: size });
-  el.dataset.id = id;
+  applyTransform(el, s);
+  makeTransformable(el, s);
 
-  makeDraggable(el, id);
-
-  // Right click to delete (desktop)
+  // Right click delete (desktop)
   el.addEventListener("contextmenu", (ev) => {
     ev.preventDefault();
     removeSticker(id);
   });
 }
 
-function makeDraggable(el, id) {
+function applyTransform(el, s) {
+  el.style.transform = `translate(-50%,-50%) rotate(${s.rot}deg) scale(${s.scale})`;
+}
+
+function makeTransformable(el, s) {
   let dragging = false;
+
+  // desktop rotation mode: hold ALT and drag
+  let rotateMode = false;
+  let startAngle = 0;
+  let startRot = 0;
+
+  // two-finger gesture
+  let gestureActive = false;
+  let startDist = 0;
+  let startGestureAngle = 0;
+  let startScale = 1;
+
+  const getCenter = () => {
+    const r = el.getBoundingClientRect();
+    return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+  };
+
+  function angleBetween(p1, p2) {
+    return Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+  }
+
+  function distBetween(p1, p2) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
 
   function onDown(e) {
     e.preventDefault();
     e.stopPropagation();
-    dragging = true;
     el.setPointerCapture?.(e.pointerId);
+
+    dragging = true;
+    rotateMode = e.altKey === true;
+
+    if (rotateMode) {
+      const { cx, cy } = getCenter();
+      startAngle = angleBetween({ x: cx, y: cy }, { x: e.clientX, y: e.clientY });
+      startRot = s.rot;
+    }
+
     el.style.cursor = "grabbing";
   }
 
   function onMove(e) {
     if (!dragging) return;
+
     const host = decorLayer.getBoundingClientRect();
+
+    if (rotateMode) {
+      const { cx, cy } = getCenter();
+      const a = angleBetween({ x: cx, y: cy }, { x: e.clientX, y: e.clientY });
+      s.rot = startRot + (a - startAngle);
+      applyTransform(el, s);
+      return;
+    }
+
     const x = e.clientX - host.left;
     const y = e.clientY - host.top;
-
     const clamped = clampToCanvas(x, y, el);
+
     el.style.left = clamped.x + "px";
     el.style.top = clamped.y + "px";
-
-    const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
-    const s = stickers.find((s) => s.id === id);
-    if (s) {
-      s.xPct = xPct;
-      s.yPct = yPct;
-    }
+    s.xPct = clamped.x / host.width;
+    s.yPct = clamped.y / host.height;
   }
 
   function onUp(e) {
     dragging = false;
+    rotateMode = false;
     el.releasePointerCapture?.(e.pointerId);
     el.style.cursor = "grab";
+  }
+
+  // Multi-touch gesture: rotate + pinch scale (iOS/iPad)
+  function onTouchStart(e) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      e.stopPropagation();
+      gestureActive = true;
+
+      const p1 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      const p2 = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+
+      startDist = distBetween(p1, p2);
+      startGestureAngle = angleBetween(p1, p2);
+      startScale = s.scale;
+      startRot = s.rot;
+    }
+  }
+
+  function onTouchMove(e) {
+    if (!gestureActive || e.touches.length !== 2) return;
+    e.preventDefault();
+
+    const p1 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    const p2 = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+
+    const d = distBetween(p1, p2);
+    const a = angleBetween(p1, p2);
+
+    // scale (clamp scale)
+    const ratio = d / Math.max(1, startDist);
+    s.scale = Math.max(0.4, Math.min(3, startScale * ratio));
+
+    // rotate
+    s.rot = startRot + (a - startGestureAngle);
+
+    applyTransform(el, s);
+  }
+
+  function onTouchEnd(e) {
+    if (e.touches.length < 2) gestureActive = false;
   }
 
   el.addEventListener("pointerdown", onDown);
   window.addEventListener("pointermove", onMove);
   window.addEventListener("pointerup", onUp);
+
+  el.addEventListener("touchstart", onTouchStart, { passive: false });
+  el.addEventListener("touchmove", onTouchMove, { passive: false });
+  el.addEventListener("touchend", onTouchEnd);
   el.style.cursor = "grab";
 }
 
@@ -1126,8 +1248,9 @@ clearStickersBtn.addEventListener("click", () => {
   decorLayer.innerHTML = "";
 });
 
-// Keep sticker positions correct on resize
 function rerenderFromModel() {
+  const host = decorLayer.getBoundingClientRect();
+
   for (const s of stickers) {
     let el = decorLayer.querySelector(`[data-id="${s.id}"]`);
     if (!el) {
@@ -1136,7 +1259,8 @@ function rerenderFromModel() {
       el.dataset.id = s.id;
       el.textContent = s.emoji;
       decorLayer.appendChild(el);
-      makeDraggable(el, s.id);
+      makeTransformable(el, s);
+
       el.addEventListener("contextmenu", (ev) => {
         ev.preventDefault();
         removeSticker(s.id);
@@ -1144,10 +1268,9 @@ function rerenderFromModel() {
     }
 
     el.style.fontSize = s.sizePx + "px";
-    const { x, y } = pxFromPct(s.xPct, s.yPct);
-    const clamped = clampToCanvas(x, y, el);
-    el.style.left = clamped.x + "px";
-    el.style.top = clamped.y + "px";
+    el.style.left = (s.xPct * host.width) + "px";
+    el.style.top  = (s.yPct * host.height) + "px";
+    applyTransform(el, s);
   }
 }
 
@@ -1156,5 +1279,4 @@ window.addEventListener("resize", rerenderFromModel);
 </script>
 </body>
 </html>
-
 
