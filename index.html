@@ -399,6 +399,33 @@
 }
 .sticker:active{ cursor:grabbing; }
 
+/* =========================
+   EMOJIS-ONLY = NO FRAME AT ALL
+   ========================= */
+
+.card-canvas[data-mode="decor"]{
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  aspect-ratio: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Remove any pseudo decorations */
+.card-canvas[data-mode="decor"]::before,
+.card-canvas[data-mode="decor"]::after{
+  content: none !important;
+}
+.card-canvas[data-mode="decor"]{
+  overflow: visible !important;
+}
+
+.decor-layer{
+  inset: 0;
+}
+
     /* =========================
        BUTTONS / CONTROLS
        ========================= */
@@ -1129,3 +1156,5 @@ window.addEventListener("resize", rerenderFromModel);
 </script>
 </body>
 </html>
+
+
