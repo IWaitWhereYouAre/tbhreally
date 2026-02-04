@@ -344,73 +344,60 @@
       display:block;
     }
 
-    /* =========================
-   MODE STYLING
+/* =========================
+   MODE STYLING 
    ========================= */
 
-/* Hybrid: keep photo frame */
-.card-canvas[data-mode="hybrid"] .photo-frame{ display:block; }
+/* Hybrid: show photo frame */
+.card-canvas[data-mode="hybrid"] .photo-frame { display:block; }
 
-/* Decor-only: remove photo frame AND make the canvas look complete (no "missing cutout") */
-.card-canvas[data-mode="decor"] .photo-frame{ display:none !important; }
+/* Decor-only: hide photo frame completely */
+.card-canvas[data-mode="decor"] .photo-frame { display:none !important; }
 
-/* Give decor mode a dedicated “card art” area so it doesn't feel empty */
+/* Decor-only: full-card background (NO inner panel / NO cut-out zone) */
 .card-canvas[data-mode="decor"]{
   background:
-    radial-gradient(220px 180px at 30% 25%, rgba(197,160,89,0.16), transparent 60%),
-    radial-gradient(260px 220px at 70% 35%, rgba(232,213,209,0.22), transparent 55%),
-    radial-gradient(320px 260px at 50% 85%, rgba(26,42,29,0.10), transparent 60%),
-    rgba(255,255,255,0.70);
-  background-blend-mode: normal;
+    radial-gradient(700px 520px at 20% 15%, rgba(197,160,89,0.14), transparent 60%),
+    radial-gradient(680px 520px at 80% 28%, rgba(232,213,209,0.20), transparent 58%),
+    radial-gradient(760px 620px at 45% 90%, rgba(26,42,29,0.10), transparent 62%),
+    rgba(255,255,255,0.72);
 }
 
-/* Add an inner “ornament panel” where the photo would have been */
+/* Optional: subtle paper texture over the whole canvas */
 .card-canvas[data-mode="decor"]::before{
   content:"";
   position:absolute;
-  left:7.5%;
-  right:7.5%;
-  top:10%;
-  height:46%;
-  border-radius:12px;
-  border:1px solid rgba(197,160,89,0.25);
-  background:
-    linear-gradient(135deg, rgba(248,245,240,0.85), rgba(255,255,255,0.65)),
-    url("https://www.transparenttextures.com/patterns/natural-paper.png");
-  box-shadow:0 10px 22px rgba(0,0,0,0.035);
+  inset:0;
+  background-image:url("https://www.transparenttextures.com/patterns/natural-paper.png");
+  opacity:0.35;
+  mix-blend-mode:multiply;
   pointer-events:none;
 }
 
-/* Optional: a subtle crest in decor mode (looks fancy instead of empty) */
-.card-canvas[data-mode="decor"]::after{
-  content:"❦";
+/* Remove any “photo panel” / crest box look */
+.card-canvas[data-mode="decor"]::after{ content:none !important; }
+/* =========================
+   STICKER LAYER
+   ========================= */
+.decor-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:auto;
+  z-index:3; /* keep above background */
+}
+
+.sticker{
   position:absolute;
   left:50%;
-  top:33%;
+  top:50%;
   transform:translate(-50%,-50%);
-  font-family:'Playfair Display',serif;
-  font-size:clamp(40px, 10vw, 72px);
-  color:rgba(197,160,89,0.35);
-  pointer-events:none;
+  user-select:none;
+  touch-action:none;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,0.08));
+  cursor:grab;
+  z-index:4; /* above photo and decor */
 }
-
-    .decor-layer{
-      position:absolute;
-      inset:0;
-      pointer-events:auto;
-    }
-
-    .sticker{
-      position:absolute;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      user-select:none;
-      touch-action:none;
-      filter:drop-shadow(0 8px 10px rgba(0,0,0,0.08));
-      cursor:grab;
-    }
-    .sticker:active{cursor:grabbing;}
+.sticker:active{ cursor:grabbing; }
 
     /* =========================
        BUTTONS / CONTROLS
@@ -951,178 +938,194 @@
 
   createDeck();
 
-  /* =========================
-     MODE + PHOTO + STICKERS
-     ========================= */
-  const cardCanvas = document.getElementById("cardCanvas");
-  const decorLayer = document.getElementById("decorLayer");
-  const photoFrame = document.getElementById("photoFrame");
-  const userPhoto = document.getElementById("userPhoto");
-  const modeSelect = document.getElementById("modeSelect");
-  const photoInput = document.getElementById("photoInput");
-  const photoInputWrap = document.getElementById("photoInputWrap");
-  const stickerSelect = document.getElementById("stickerSelect");
-  const stickerSize = document.getElementById("stickerSize");
-  const placeStickerBtn = document.getElementById("placeStickerBtn");
-  const clearStickersBtn = document.getElementById("clearStickersBtn");
+/* =========================
+   MODE + PHOTO + STICKERS
+   ========================= */
+const cardCanvas = document.getElementById("cardCanvas");
+const decorLayer = document.getElementById("decorLayer");
+const photoFrame = document.getElementById("photoFrame");
+const userPhoto = document.getElementById("userPhoto");
+const modeSelect = document.getElementById("modeSelect");
+const photoInput = document.getElementById("photoInput");
+const photoInputWrap = document.getElementById("photoInputWrap");
+const stickerSelect = document.getElementById("stickerSelect");
+const stickerSize = document.getElementById("stickerSize");
+const placeStickerBtn = document.getElementById("placeStickerBtn");
+const clearStickersBtn = document.getElementById("clearStickersBtn");
 
-  const stickers = [];
+const stickers = [];
 
 function setMode(mode) {
   const isHybrid = mode === "hybrid";
   cardCanvas.dataset.mode = mode;
 
+  // Show/hide the photo upload control
   photoInputWrap.style.display = isHybrid ? "inline-flex" : "none";
 
-  // In decor mode, fully clear photo so it never shows up in capture
   if (!isHybrid) {
+    // Decor mode: fully clear photo + hide image so it never shows in capture
     userPhoto.removeAttribute("src");
     userPhoto.style.display = "none";
     photoInput.value = "";
   } else {
-    userPhoto.style.display = "block";
+    // Hybrid mode: show frame, show image only if it exists
+    userPhoto.style.display = userPhoto.src ? "block" : "none";
   }
 }
 
-  modeSelect.addEventListener("change", (e) => setMode(e.target.value));
-  setMode(modeSelect.value);
+// Bind mode change ONCE (not inside setMode)
+modeSelect.addEventListener("change", (e) => setMode(e.target.value));
+setMode(modeSelect.value);
 
-  photoInput.addEventListener("change", (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    userPhoto.src = URL.createObjectURL(file);
+// Bind photo upload ONCE
+photoInput.addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  userPhoto.src = URL.createObjectURL(file);
+  userPhoto.style.display = "block";
+});
+
+function pctFromPx(x, y) {
+  const r = decorLayer.getBoundingClientRect();
+  return { xPct: x / r.width, yPct: y / r.height };
+}
+function pxFromPct(xPct, yPct) {
+  const r = decorLayer.getBoundingClientRect();
+  return { x: xPct * r.width, y: yPct * r.height };
+}
+
+function clampToCanvas(x, y, el) {
+  const host = decorLayer.getBoundingClientRect();
+  const rect = el.getBoundingClientRect();
+  const halfW = rect.width / 2;
+  const halfH = rect.height / 2;
+  return {
+    x: Math.max(halfW, Math.min(host.width - halfW, x)),
+    y: Math.max(halfH, Math.min(host.height - halfH, y)),
+  };
+}
+
+function removeSticker(id) {
+  const idx = stickers.findIndex((s) => s.id === id);
+  if (idx !== -1) stickers.splice(idx, 1);
+  const el = decorLayer.querySelector(`[data-id="${id}"]`);
+  if (el) el.remove();
+}
+
+function addStickerAtPx(x, y) {
+  const emoji = stickerSelect.value || "🩷";
+  const size = Number(stickerSize.value || 34);
+
+  const el = document.createElement("div");
+  el.className = "sticker";
+  el.textContent = emoji;
+  el.style.fontSize = size + "px";
+  decorLayer.appendChild(el);
+
+  const clamped = clampToCanvas(x, y, el);
+  el.style.left = clamped.x + "px";
+  el.style.top = clamped.y + "px";
+
+  const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
+  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+  stickers.push({ id, emoji, xPct, yPct, sizePx: size });
+  el.dataset.id = id;
+
+  makeDraggable(el, id);
+
+  // Right click to delete (desktop)
+  el.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault();
+    removeSticker(id);
   });
+}
 
-  function pctFromPx(x, y) {
-    const r = decorLayer.getBoundingClientRect();
-    return { xPct: x / r.width, yPct: y / r.height };
+function makeDraggable(el, id) {
+  let dragging = false;
+
+  function onDown(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = true;
+    el.setPointerCapture?.(e.pointerId);
+    el.style.cursor = "grabbing";
   }
-  function pxFromPct(xPct, yPct) {
-    const r = decorLayer.getBoundingClientRect();
-    return { x: xPct * r.width, y: yPct * r.height };
-  }
-  function clampToCanvas(x, y, el) {
+
+  function onMove(e) {
+    if (!dragging) return;
     const host = decorLayer.getBoundingClientRect();
-    const rect = el.getBoundingClientRect();
-    const halfW = rect.width / 2;
-    const halfH = rect.height / 2;
-    return {
-      x: Math.max(halfW, Math.min(host.width - halfW, x)),
-      y: Math.max(halfH, Math.min(host.height - halfH, y)),
-    };
-  }
-
-  function removeSticker(id) {
-    const idx = stickers.findIndex(s => s.id === id);
-    if (idx !== -1) stickers.splice(idx, 1);
-    const el = decorLayer.querySelector(`[data-id="${id}"]`);
-    if (el) el.remove();
-  }
-
-  function addStickerAtPx(x, y) {
-    const emoji = stickerSelect.value || "🩷";
-    const size = Number(stickerSize.value || 34);
-
-    const el = document.createElement("div");
-    el.className = "sticker";
-    el.textContent = emoji;
-    el.style.fontSize = size + "px";
-    decorLayer.appendChild(el);
+    const x = e.clientX - host.left;
+    const y = e.clientY - host.top;
 
     const clamped = clampToCanvas(x, y, el);
     el.style.left = clamped.x + "px";
     el.style.top = clamped.y + "px";
 
     const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
-    const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
-    stickers.push({ id, emoji, xPct, yPct, sizePx: size });
-    el.dataset.id = id;
-
-    makeDraggable(el, id);
-
-    el.addEventListener("contextmenu", (ev) => {
-      ev.preventDefault();
-      removeSticker(id);
-    });
+    const s = stickers.find((s) => s.id === id);
+    if (s) {
+      s.xPct = xPct;
+      s.yPct = yPct;
+    }
   }
 
-  function makeDraggable(el, id) {
-    let dragging = false;
-
-    function onDown(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      dragging = true;
-      el.setPointerCapture?.(e.pointerId);
-      el.style.cursor = "grabbing";
-    }
-
-    function onMove(e) {
-      if (!dragging) return;
-      const host = decorLayer.getBoundingClientRect();
-      const x = e.clientX - host.left;
-      const y = e.clientY - host.top;
-
-      const clamped = clampToCanvas(x, y, el);
-      el.style.left = clamped.x + "px";
-      el.style.top = clamped.y + "px";
-
-      const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
-      const s = stickers.find(s => s.id === id);
-      if (s) { s.xPct = xPct; s.yPct = yPct; }
-    }
-
-    function onUp(e) {
-      dragging = false;
-      el.releasePointerCapture?.(e.pointerId);
-      el.style.cursor = "grab";
-    }
-
-    el.addEventListener("pointerdown", onDown);
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+  function onUp(e) {
+    dragging = false;
+    el.releasePointerCapture?.(e.pointerId);
     el.style.cursor = "grab";
   }
 
-  // Tap/Click to place (only when not tapping an existing sticker)
-  decorLayer.addEventListener("pointerdown", (e) => {
-    if (e.target.classList?.contains("sticker")) return;
-    const r = decorLayer.getBoundingClientRect();
-    addStickerAtPx(e.clientX - r.left, e.clientY - r.top);
-  });
+  el.addEventListener("pointerdown", onDown);
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+  el.style.cursor = "grab";
+}
 
-  placeStickerBtn.addEventListener("click", () => {
-    const r = decorLayer.getBoundingClientRect();
-    addStickerAtPx(r.width / 2, r.height / 2);
-  });
+// Tap/Click empty space to place sticker
+decorLayer.addEventListener("pointerdown", (e) => {
+  if (e.target.classList?.contains("sticker")) return;
+  const r = decorLayer.getBoundingClientRect();
+  addStickerAtPx(e.clientX - r.left, e.clientY - r.top);
+});
 
-  clearStickersBtn.addEventListener("click", () => {
-    stickers.length = 0;
-    decorLayer.innerHTML = "";
-  });
+placeStickerBtn.addEventListener("click", () => {
+  const r = decorLayer.getBoundingClientRect();
+  addStickerAtPx(r.width / 2, r.height / 2);
+});
 
-  function rerenderFromModel() {
-    for (const s of stickers) {
-      let el = decorLayer.querySelector(`[data-id="${s.id}"]`);
-      if (!el) {
-        el = document.createElement("div");
-        el.className = "sticker";
-        el.dataset.id = s.id;
-        el.textContent = s.emoji;
-        decorLayer.appendChild(el);
-        makeDraggable(el, s.id);
-        el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(s.id); });
-      }
+clearStickersBtn.addEventListener("click", () => {
+  stickers.length = 0;
+  decorLayer.innerHTML = "";
+});
 
-      el.style.fontSize = s.sizePx + "px";
-      const { x, y } = pxFromPct(s.xPct, s.yPct);
-      const clamped = clampToCanvas(x, y, el);
-      el.style.left = clamped.x + "px";
-      el.style.top = clamped.y + "px";
+// Keep sticker positions correct on resize
+function rerenderFromModel() {
+  for (const s of stickers) {
+    let el = decorLayer.querySelector(`[data-id="${s.id}"]`);
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "sticker";
+      el.dataset.id = s.id;
+      el.textContent = s.emoji;
+      decorLayer.appendChild(el);
+      makeDraggable(el, s.id);
+      el.addEventListener("contextmenu", (ev) => {
+        ev.preventDefault();
+        removeSticker(s.id);
+      });
     }
-  }
 
-  window.addEventListener("resize", rerenderFromModel);
+    el.style.fontSize = s.sizePx + "px";
+    const { x, y } = pxFromPct(s.xPct, s.yPct);
+    const clamped = clampToCanvas(x, y, el);
+    el.style.left = clamped.x + "px";
+    el.style.top = clamped.y + "px";
+  }
+}
+
+window.addEventListener("resize", rerenderFromModel);
+
 </script>
 </body>
 </html>
