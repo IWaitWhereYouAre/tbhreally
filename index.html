@@ -64,6 +64,7 @@
         radial-gradient(900px 700px at 40% 90%, rgba(26,42,29,0.14), transparent 55%),
         linear-gradient(120deg, rgba(248,245,240,1), rgba(248,245,240,1));
     }
+
     .garden-bg::before {
       content: "";
       position: absolute;
@@ -78,6 +79,7 @@
       animation: gardenDrift 18s ease-in-out infinite;
       transform: translate3d(0,0,0);
     }
+
     .garden-bg::after {
       content: "";
       position: absolute;
@@ -86,6 +88,7 @@
       opacity: 0.55;
       mix-blend-mode: multiply;
     }
+
     @keyframes gardenDrift {
       0%   { transform: translate(-4%, -2%) rotate(-2deg); }
       50%  { transform: translate(4%, 2%) rotate(2deg); }
@@ -360,45 +363,58 @@
     }
 
     /* =========================
-       PHOTO + STICKERS (CAPTURED)
+       CARD CANVAS (CAPTURED)
        ========================= */
-    .capture-photo {
+    .card-canvas{
       position: relative;
       width: 100%;
-      height: 220px;
-      margin: 18px 0 10px;
-      border-radius: 10px;
-      overflow: hidden;
+      max-width: 420px;
+      margin: 18px auto 10px;
+      aspect-ratio: 4 / 5; /* lock proportions */
+      border-radius: 12px;
+      overflow: hidden; /* clip to card borders */
       border: 1px solid rgba(197,160,89,0.25);
       background: rgba(255,255,255,0.55);
     }
 
-    .capture-photo img {
+    .photo-frame{
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 10%;
+      height: 44%;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(197,160,89,0.25);
+      background: rgba(255,255,255,0.6);
+    }
+
+    .photo-frame img{
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
 
-    .sticker-layer {
+    .decor-layer{
       position: absolute;
       inset: 0;
       pointer-events: auto;
     }
 
-    .sticker {
+    .sticker{
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      font-size: 28px;
       cursor: grab;
       user-select: none;
       touch-action: none;
       filter: drop-shadow(0 8px 10px rgba(0,0,0,0.08));
     }
+    .sticker:active{ cursor: grabbing; }
 
-    .sticker:active { cursor: grabbing; }
+    .card-canvas[data-mode="decor"] .photo-frame{ display:none; }
 
     /* =========================
        DECORATION CONTROLS (NOT CAPTURED)
@@ -409,14 +425,12 @@
       gap: 10px;
       justify-items: center;
     }
-
     .decorate-row {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
     }
-
     .pill {
       border: 1px solid rgba(197,160,89,0.55);
       background: rgba(255,255,255,0.55);
@@ -425,10 +439,11 @@
       padding: 8px 12px;
       font-size: 0.7rem;
       letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
-
     .pill input[type="file"] { font-size: 0.65rem; }
-    .pill input[type="color"] { width: 30px; height: 22px; border: none; background: transparent; }
     .pill input[type="range"] { width: 140px; }
   </style>
 </head>
@@ -466,10 +481,12 @@
         <span class="result-isa">ISA Chulalongkorn</span>
         <h2 class="result-theme">Heart to Heart</h2>
 
-        <!-- PHOTO + STICKERS (CAPTURED) -->
-        <div class="capture-photo" id="photoBox">
-          <img id="userPhoto" alt="Your photo" style="display:none;" />
-          <div class="sticker-layer" id="stickerLayer"></div>
+        <!-- CARD CANVAS (CAPTURED by html2canvas) -->
+        <div id="cardCanvas" class="card-canvas" data-mode="hybrid">
+          <div id="photoFrame" class="photo-frame">
+            <img id="userPhoto" alt="Your photo" />
+          </div>
+          <div id="decorLayer" class="decor-layer"></div>
         </div>
 
         <div class="quote-box" id="quote-text"></div>
@@ -487,10 +504,18 @@
         </div>
       </div>
 
-      <!-- DECORATION CONTROLS (NOT CAPTURED) -->
+      <!-- Controls (NOT captured) -->
       <div class="decorate-panel">
         <div class="decorate-row">
           <div class="pill">
+            Mode:
+            <select id="modeSelect">
+              <option value="hybrid" selected>Mode A — Photo + Emojis</option>
+              <option value="decor">Mode B — Emojis Only</option>
+            </select>
+          </div>
+
+          <div class="pill" id="photoInputWrap">
             Add Photo:
             <input id="photoInput" type="file" accept="image/*" />
           </div>
@@ -523,23 +548,18 @@
           </div>
 
           <div class="pill">
-            Color:
-            <input id="stickerColor" type="color" value="#c5a059" />
-          </div>
-
-          <div class="pill">
             Size:
-            <input id="stickerSize" type="range" min="16" max="72" value="30" />
+            <input id="stickerSize" type="range" min="16" max="96" value="34" />
           </div>
         </div>
 
         <div class="decorate-row">
           <button class="btn" id="placeStickerBtn" type="button">Place Sticker</button>
-          <button class="btn" id="clearStickersBtn" type="button">Clear Stickers</button>
+          <button class="btn" id="clearStickersBtn" type="button">Clear</button>
         </div>
 
         <p style="font-size:0.6rem; opacity:0.55; letter-spacing:1px; margin:0;">
-          Tip: click inside the photo area to place. Drag to move. Right-click (or long-press) to delete.
+          Drag to move. Right-click or long-press to delete. Everything is clipped to the card.
         </p>
       </div>
 
@@ -912,69 +932,107 @@
     createDeck();
 
     /* =========================
-       PHOTO UPLOAD
+       MODE + CANVAS STICKERS (Fidelity)
        ========================= */
+    const cardCanvas = document.getElementById("cardCanvas");
+    const decorLayer = document.getElementById("decorLayer");
+    const userPhoto  = document.getElementById("userPhoto");
+
+    const modeSelect = document.getElementById("modeSelect");
     const photoInput = document.getElementById("photoInput");
-    const userPhoto = document.getElementById("userPhoto");
+    const photoInputWrap = document.getElementById("photoInputWrap");
 
-    if (photoInput && userPhoto) {
-      photoInput.addEventListener("change", (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const url = URL.createObjectURL(file);
-        userPhoto.src = url;
-        userPhoto.style.display = "block";
-      });
-    }
-
-    /* =========================
-       STICKERS
-       ========================= */
-    const photoBox = document.getElementById("photoBox");
-    const stickerLayer = document.getElementById("stickerLayer");
     const stickerSelect = document.getElementById("stickerSelect");
-    const stickerColor = document.getElementById("stickerColor");
     const stickerSize = document.getElementById("stickerSize");
     const placeStickerBtn = document.getElementById("placeStickerBtn");
     const clearStickersBtn = document.getElementById("clearStickersBtn");
 
-    function createSticker(x, y) {
-      if (!stickerLayer) return;
+    function setMode(mode){
+      cardCanvas.dataset.mode = mode;
+      const showPhoto = mode === "hybrid";
+      photoInputWrap.style.display = showPhoto ? "inline-flex" : "none";
+      if (!showPhoto){
+        userPhoto.removeAttribute("src");
+      }
+    }
+    modeSelect.addEventListener("change", (e) => setMode(e.target.value));
+    setMode(modeSelect.value);
 
-      const s = document.createElement("div");
-      s.className = "sticker";
-      s.textContent = stickerSelect?.value || "🩷";
-      s.style.fontSize = (stickerSize?.value || 30) + "px";
-
-      const color = stickerColor?.value || "#c5a059";
-      s.style.textShadow = `0 0 10px ${color}66, 0 0 2px ${color}55`;
-
-      s.style.left = x + "px";
-      s.style.top = y + "px";
-      s.style.transform = "translate(-50%, -50%)";
-
-      makeDraggable(s);
-
-      // Delete: right-click
-      s.addEventListener("contextmenu", (ev) => {
-        ev.preventDefault();
-        s.remove();
+    if (photoInput) {
+      photoInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        userPhoto.src = URL.createObjectURL(file);
       });
-
-      // Delete: long-press
-      let pressTimer = null;
-      s.addEventListener("pointerdown", () => {
-        pressTimer = setTimeout(() => s.remove(), 550);
-      });
-      s.addEventListener("pointerup", () => clearTimeout(pressTimer));
-      s.addEventListener("pointercancel", () => clearTimeout(pressTimer));
-      s.addEventListener("pointermove", () => clearTimeout(pressTimer));
-
-      stickerLayer.appendChild(s);
     }
 
-    function makeDraggable(el) {
+    const stickers = []; // {id, emoji, xPct, yPct, sizePx}
+
+    function pctFromPx(x, y){
+      const r = decorLayer.getBoundingClientRect();
+      return { xPct: x / r.width, yPct: y / r.height };
+    }
+    function pxFromPct(xPct, yPct){
+      const r = decorLayer.getBoundingClientRect();
+      return { x: xPct * r.width, y: yPct * r.height };
+    }
+
+    function clampToCanvas(x, y, el){
+      const host = decorLayer.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
+      const halfW = rect.width / 2;
+      const halfH = rect.height / 2;
+
+      const minX = halfW;
+      const maxX = host.width - halfW;
+      const minY = halfH;
+      const maxY = host.height - halfH;
+
+      return {
+        x: Math.max(minX, Math.min(maxX, x)),
+        y: Math.max(minY, Math.min(maxY, y)),
+      };
+    }
+
+    function addStickerAtPx(x, y){
+      const emoji = stickerSelect?.value || "🩷";
+      const size = Number(stickerSize?.value || 34);
+
+      const el = document.createElement("div");
+      el.className = "sticker";
+      el.textContent = emoji;
+      el.style.fontSize = size + "px";
+      decorLayer.appendChild(el);
+
+      const clamped = clampToCanvas(x, y, el);
+      el.style.left = clamped.x + "px";
+      el.style.top  = clamped.y + "px";
+
+      const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
+
+      const id = (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+      stickers.push({ id, emoji, xPct, yPct, sizePx: size });
+
+      el.dataset.id = id;
+
+      el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(id); });
+
+      let pressTimer = null;
+      el.addEventListener("pointerdown", () => { pressTimer = setTimeout(() => removeSticker(id), 550); });
+      el.addEventListener("pointerup", () => clearTimeout(pressTimer));
+      el.addEventListener("pointercancel", () => clearTimeout(pressTimer));
+      el.addEventListener("pointermove", () => clearTimeout(pressTimer));
+
+      makeDraggable(el, id);
+    }
+
+    function removeSticker(id){
+      const idx = stickers.findIndex(s => s.id === id);
+      if (idx >= 0) stickers.splice(idx, 1);
+      decorLayer.querySelector(`[data-id="${id}"]`)?.remove();
+    }
+
+    function makeDraggable(el, id){
       let dragging = false;
       let offsetX = 0, offsetY = 0;
 
@@ -982,53 +1040,71 @@
         dragging = true;
         el.setPointerCapture(e.pointerId);
 
-        const rect = el.getBoundingClientRect();
-        offsetX = e.clientX - rect.left - rect.width / 2;
-        offsetY = e.clientY - rect.top - rect.height / 2;
+        const r = el.getBoundingClientRect();
+        offsetX = e.clientX - r.left - r.width/2;
+        offsetY = e.clientY - r.top  - r.height/2;
 
         e.stopPropagation();
       });
 
       el.addEventListener("pointermove", (e) => {
-        if (!dragging || !stickerLayer) return;
+        if (!dragging) return;
+        const host = decorLayer.getBoundingClientRect();
+        const xRaw = (e.clientX - host.left) - offsetX;
+        const yRaw = (e.clientY - host.top)  - offsetY;
 
-        const hostRect = stickerLayer.getBoundingClientRect();
-        const x = e.clientX - hostRect.left - offsetX;
-        const y = e.clientY - hostRect.top - offsetY;
+        const clamped = clampToCanvas(xRaw, yRaw, el);
+        el.style.left = clamped.x + "px";
+        el.style.top  = clamped.y + "px";
 
-        el.style.left = x + "px";
-        el.style.top = y + "px";
+        const rec = stickers.find(s => s.id === id);
+        if (rec){
+          const p = pctFromPx(clamped.x, clamped.y);
+          rec.xPct = p.xPct;
+          rec.yPct = p.yPct;
+        }
       });
 
       el.addEventListener("pointerup", () => dragging = false);
       el.addEventListener("pointercancel", () => dragging = false);
     }
 
-    // Click inside photo to place
-    if (photoBox && stickerLayer) {
-      photoBox.addEventListener("click", (e) => {
-        if (e.target.classList?.contains("sticker")) return;
+    decorLayer.addEventListener("click", (e) => {
+      if (e.target.classList?.contains("sticker")) return;
+      const r = decorLayer.getBoundingClientRect();
+      addStickerAtPx(e.clientX - r.left, e.clientY - r.top);
+    });
 
-        const rect = stickerLayer.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        createSticker(x, y);
-      });
-    }
+    placeStickerBtn.addEventListener("click", () => {
+      const r = decorLayer.getBoundingClientRect();
+      addStickerAtPx(r.width/2, r.height/2);
+    });
 
-    // Button place center
-    if (placeStickerBtn && stickerLayer) {
-      placeStickerBtn.addEventListener("click", () => {
-        const rect = stickerLayer.getBoundingClientRect();
-        createSticker(rect.width / 2, rect.height / 2);
-      });
-    }
+    clearStickersBtn.addEventListener("click", () => {
+      stickers.length = 0;
+      decorLayer.innerHTML = "";
+    });
 
-    if (clearStickersBtn && stickerLayer) {
-      clearStickersBtn.addEventListener("click", () => {
-        stickerLayer.innerHTML = "";
-      });
+    function rerenderFromModel(){
+      for (const s of stickers){
+        let el = decorLayer.querySelector(`[data-id="${s.id}"]`);
+        if (!el){
+          el = document.createElement("div");
+          el.className = "sticker";
+          el.dataset.id = s.id;
+          el.textContent = s.emoji;
+          decorLayer.appendChild(el);
+          makeDraggable(el, s.id);
+          el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(s.id); });
+        }
+        el.style.fontSize = s.sizePx + "px";
+        const { x, y } = pxFromPct(s.xPct, s.yPct);
+        const clamped = clampToCanvas(x, y, el);
+        el.style.left = clamped.x + "px";
+        el.style.top  = clamped.y + "px";
+      }
     }
+    window.addEventListener("resize", rerenderFromModel);
   </script>
 </body>
 </html>
