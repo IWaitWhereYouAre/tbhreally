@@ -16,7 +16,6 @@
       --blush:#e8d5d1;
     }
 
-    /* Mobile/Safari stability */
     html,body{
       width:100%;
       height:100%;
@@ -145,7 +144,7 @@
       will-change:transform,opacity;
     }
     @keyframes flyDiag{
-      0%{transform:translate3d(var(--fromX),var(--fromfromY, var(--fromY)),0) scale(var(--s,1)); opacity:0;}
+      0%{transform:translate3d(var(--fromX),var(--fromY),0) scale(var(--s,1)); opacity:0;}
       10%{opacity:0.65;}
       90%{opacity:0.55;}
       100%{transform:translate3d(var(--toX),var(--toY),0) scale(var(--s,1)); opacity:0;}
@@ -158,7 +157,6 @@
       100%{transform:rotate(8deg) scaleY(1);}
     }
 
-    /* Decorative */
     .vignette{
       position:fixed; inset:0;
       background:radial-gradient(circle, transparent 50%, rgba(26,42,29,0.1));
@@ -240,9 +238,8 @@
     /* =========================
        RESULT
        ========================= */
-    #result-screen{display:none; opacity:0;}
+    #result-screen{display:none; opacity:0; transition:opacity .6s ease;}
 
-    /* Proportional card container that looks consistent across devices */
     #capture-frame{
       background:#fff;
       padding:clamp(26px,4.5vw,56px) clamp(18px,4vw,40px);
@@ -323,11 +320,11 @@
       overflow:hidden; /* CLIP to card borders */
       border:1px solid rgba(197,160,89,0.25);
       background:rgba(255,255,255,0.6);
-      aspect-ratio: 4 / 5;   /* consistent proportion across devices */
-      max-height: 52vh;      /* keeps it visible on small screens */
+      aspect-ratio: 4 / 5;
+      max-height: 52vh;
+      touch-action:none; /* makes pointer dragging stable */
     }
 
-    /* Photo frame (inside canvas) */
     .photo-frame{
       position:absolute;
       left:7.5%;
@@ -339,7 +336,6 @@
       border:1px solid rgba(197,160,89,0.25);
       background:rgba(255,255,255,0.72);
       box-shadow:0 10px 22px rgba(0,0,0,0.04);
-      transition:opacity 0.2s ease;
     }
     .photo-frame img{
       width:100%;
@@ -347,12 +343,10 @@
       object-fit:cover;
       display:block;
     }
-    /* Hide frame in decor-only mode */
-    .card-canvas[data-mode="decor"] .photo-frame{
-      display:none !important;
-    }
 
-    /* Decorations cover whole canvas */
+    /* Hide frame in decor-only mode */
+    .card-canvas[data-mode="decor"] .photo-frame{ display:none !important; }
+
     .decor-layer{
       position:absolute;
       inset:0;
@@ -364,15 +358,15 @@
       left:50%;
       top:50%;
       transform:translate(-50%,-50%);
-      cursor:grab;
       user-select:none;
       touch-action:none;
       filter:drop-shadow(0 8px 10px rgba(0,0,0,0.08));
+      cursor:grab;
     }
     .sticker:active{cursor:grabbing;}
 
     /* =========================
-       BUTTONS
+       BUTTONS / CONTROLS
        ========================= */
     .btn-group{
       margin-top:22px;
@@ -409,9 +403,6 @@
       border-color:rgba(26,42,29,0.85);
     }
 
-    /* =========================
-       CONTROLS (NOT CAPTURED)
-       ========================= */
     .decorate-panel{
       margin-top:14px;
       display:grid;
@@ -477,7 +468,6 @@
         <span class="result-isa">ISA Chulalongkorn</span>
         <h2 class="result-theme">Heart to Heart</h2>
 
-        <!-- CAPTURED CANVAS (stickers are clipped here) -->
         <div id="cardCanvas" class="card-canvas" data-mode="decor">
           <div id="photoFrame" class="photo-frame">
             <img id="userPhoto" alt="Your photo" />
@@ -500,7 +490,6 @@
         </div>
       </div>
 
-      <!-- NOT CAPTURED: controls -->
       <div class="decorate-panel">
         <div class="decorate-row">
           <div class="pill">
@@ -521,7 +510,7 @@
             <select id="stickerSelect">
               <option value="💌">💌 Love Letter</option>
               <option value="❣️">❣️ Heart Exclamation</option>
-              <option value="🩷">🩷 Heart</option>
+              <option value="🩷" selected>🩷 Heart</option>
               <option value="❤️">❤️ Red Heart</option>
               <option value="🧡">🧡 Orange Heart</option>
               <option value="💛">💛 Yellow Heart</option>
@@ -553,550 +542,535 @@
           <button class="btn" id="placeStickerBtn" type="button">Place Sticker</button>
           <button class="btn" id="clearStickersBtn" type="button">Clear</button>
         </div>
-
-        <p style="font-size:0.6rem; opacity:0.55; letter-spacing:1px; margin:0;">
-          Tap inside the canvas to place. Drag to move. Right-click or long-press to delete. Stickers are clipped to the card.
-        </p>
       </div>
 
       <div class="btn-group">
-        <button class="btn" onclick="location.reload()">Reset</button>
-        <button class="btn btn-save" onclick="saveImage()">Save Picture</button>
+        <button class="btn" id="resetBtn" type="button">Reset</button>
+        <button class="btn btn-save" id="saveBtn" type="button">Save Picture</button>
         <button class="btn btn-sound active" id="soundBtn2" type="button">Sound: On</button>
       </div>
-
-      <p style="font-size:0.6rem; margin-top: 16px; opacity:0.5; letter-spacing:1px;">
-        Saved to your downloads folder
-      </p>
     </div>
   </div>
 
-  <script>
-    /* =========================
-       PETALS
-       ========================= */
-    const petalsHost = document.getElementById('petals');
-    function spawnPetals(count = 16) {
-      petalsHost.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        p.className = 'petal';
-        const left = Math.random() * 100;
-        const dur = 10 + Math.random() * 12;
-        const delay = Math.random() * 8;
-        const size = 8 + Math.random() * 10;
-        p.style.left = left + 'vw';
-        p.style.animationDuration = dur + 's';
-        p.style.animationDelay = delay + 's';
-        p.style.width = size + 'px';
-        p.style.height = (size * 1.5) + 'px';
-        p.style.opacity = (0.45 + Math.random() * 0.45).toFixed(2);
-        petalsHost.appendChild(p);
-      }
+<script>
+  /* =========================
+     PETALS
+     ========================= */
+  const petalsHost = document.getElementById('petals');
+  function spawnPetals(count = 16) {
+    petalsHost.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      const left = Math.random() * 100;
+      const dur = 10 + Math.random() * 12;
+      const delay = Math.random() * 8;
+      const size = 8 + Math.random() * 10;
+      p.style.left = left + 'vw';
+      p.style.animationDuration = dur + 's';
+      p.style.animationDelay = delay + 's';
+      p.style.width = size + 'px';
+      p.style.height = (size * 1.5) + 'px';
+      p.style.opacity = (0.45 + Math.random() * 0.45).toFixed(2);
+      petalsHost.appendChild(p);
     }
-    spawnPetals(18);
-    window.addEventListener('resize', () => spawnPetals(window.innerWidth < 480 ? 12 : 18));
+  }
+  spawnPetals(18);
+  window.addEventListener('resize', () => spawnPetals(window.innerWidth < 480 ? 12 : 18));
 
-    /* =========================
-       SOUND (birds only)
-       ========================= */
-    let audioCtx = null;
-    let masterGain = null;
-    let soundOn = true;
-    let audioPrimed = false;
+  /* =========================
+     SOUND (birds only)
+     ========================= */
+  let audioCtx = null;
+  let masterGain = null;
+  let soundOn = true;
+  let audioPrimed = false;
 
-    function ensureAudio() {
-      if (audioCtx) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = 0.0001;
-      masterGain.connect(audioCtx.destination);
+  function ensureAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.0001;
+    masterGain.connect(audioCtx.destination);
+  }
+
+  async function primeAndApplyAudio() {
+    ensureAudio();
+    if (audioCtx.state === "suspended") {
+      try { await audioCtx.resume(); } catch (e) {}
     }
+    audioPrimed = true;
 
-    async function primeAndApplyAudio() {
-      ensureAudio();
-      if (audioCtx.state === "suspended") {
-        try { await audioCtx.resume(); } catch (e) {}
-      }
-      audioPrimed = true;
-
-      const now = audioCtx.currentTime;
-      masterGain.gain.cancelScheduledValues(now);
-      masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-      masterGain.gain.exponentialRampToValueAtTime(soundOn ? 0.85 : 0.0001, now + 0.12);
-      updateSoundButtons();
-    }
-
-    function setSound(on) {
-      soundOn = on;
-      if (!audioPrimed || !audioCtx || !masterGain) { updateSoundButtons(); return; }
-      const now = audioCtx.currentTime;
-      masterGain.gain.cancelScheduledValues(now);
-      masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-      masterGain.gain.exponentialRampToValueAtTime(on ? 0.85 : 0.0001, now + 0.12);
-      updateSoundButtons();
-    }
-
-    function toggleSound() { setSound(!soundOn); }
-
-    function updateSoundButtons() {
-      const label = soundOn ? "Sound: On" : "Sound: Off";
-      const btns = [document.getElementById("soundBtn"), document.getElementById("soundBtn2")].filter(Boolean);
-      btns.forEach(b => {
-        b.textContent = label;
-        b.classList.toggle("active", soundOn);
-      });
-    }
-
-    (function bindAutoStart() {
-      const once = async () => {
-        await primeAndApplyAudio();
-        window.removeEventListener("pointerdown", once);
-        window.removeEventListener("keydown", once);
-      };
-      window.addEventListener("pointerdown", once);
-      window.addEventListener("keydown", once);
-    })();
-
-    document.getElementById("soundBtn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleSound();
-    });
-
-    function pleasantChirp({ pan = 0, volume = 1 } = {}) {
-      if (!audioCtx || !audioPrimed || !soundOn) return;
-
-      const now = audioCtx.currentTime;
-      const osc1 = audioCtx.createOscillator();
-      const osc2 = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      const filter = audioCtx.createBiquadFilter();
-      const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
-
-      osc1.type = "sine";
-      osc2.type = "triangle";
-      filter.type = "bandpass";
-      filter.frequency.value = 2600;
-      filter.Q.value = 9;
-
-      const base = 1350 + Math.random() * 950;
-      const sweepUp = 1.30 + Math.random() * 0.30;
-      const duration = 0.18 + Math.random() * 0.08;
-
-      osc1.frequency.setValueAtTime(base, now);
-      osc1.frequency.exponentialRampToValueAtTime(base * sweepUp, now + duration * 0.65);
-      osc2.frequency.setValueAtTime(base * 0.985, now);
-      osc2.frequency.exponentialRampToValueAtTime(base * sweepUp * 1.02, now + duration * 0.65);
-
-      const lfo = audioCtx.createOscillator();
-      const lfoGain = audioCtx.createGain();
-      lfo.type = "sine";
-      lfo.frequency.value = 10 + Math.random() * 3;
-      lfoGain.gain.value = 14 + Math.random() * 9;
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc1.frequency);
-      lfoGain.connect(osc2.frequency);
-
-      const peak = 0.045 * volume;
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(peak, now + 0.028);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-      osc1.connect(filter);
-      osc2.connect(filter);
-
-      if (panner) {
-        panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), now);
-        filter.connect(panner);
-        panner.connect(gain);
-      } else {
-        filter.connect(gain);
-      }
-      gain.connect(masterGain);
-
-      lfo.start(now);
-      osc1.start(now);
-      osc2.start(now);
-
-      const stopAt = now + duration + 0.02;
-      lfo.stop(stopAt);
-      osc1.stop(stopAt);
-      osc2.stop(stopAt);
-    }
-
+    const now = audioCtx.currentTime;
+    masterGain.gain.cancelScheduledValues(now);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+    masterGain.gain.exponentialRampToValueAtTime(soundOn ? 0.85 : 0.0001, now + 0.12);
     updateSoundButtons();
+  }
 
-    /* =========================
-       BIRDS (visual + sound synced)
-       ========================= */
-    const birdsHost = document.getElementById('birds');
+  function setSound(on) {
+    soundOn = on;
+    if (!audioPrimed || !audioCtx || !masterGain) { updateSoundButtons(); return; }
+    const now = audioCtx.currentTime;
+    masterGain.gain.cancelScheduledValues(now);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+    masterGain.gain.exponentialRampToValueAtTime(on ? 0.85 : 0.0001, now + 0.12);
+    updateSoundButtons();
+  }
 
-    function spawnBird() {
-      if (!birdsHost) return;
+  function toggleSound() { setSound(!soundOn); }
 
-      const bird = document.createElement('div');
-      bird.className = 'bird';
-
-      const mode = Math.random() > 0.5 ? "up" : "down";
-      const fromX = "-25vw";
-      const toX   = "120vw";
-
-      const fromY = mode === "up"
-        ? (65 + Math.random() * 25) + "vh"
-        : (10 + Math.random() * 25) + "vh";
-
-      const toY = mode === "up"
-        ? (8 + Math.random() * 25) + "vh"
-        : (55 + Math.random() * 30) + "vh";
-
-      const dur = 9 + Math.random() * 10;
-      const delay = Math.random() * 2.5;
-      const scale = (0.75 + Math.random() * 0.7).toFixed(2);
-      const opacity = (0.28 + Math.random() * 0.35).toFixed(2);
-
-      bird.style.setProperty('--fromX', fromX);
-      bird.style.setProperty('--toX', toX);
-      bird.style.setProperty('--fromY', fromY);
-      bird.style.setProperty('--toY', toY);
-      bird.style.setProperty('--s', scale);
-      bird.style.animationDuration = dur + "s";
-      bird.style.animationDelay = delay + "s";
-      bird.style.opacity = opacity;
-
-      bird.innerHTML = `
-        <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-          <g fill="none" stroke-linecap="round" stroke="rgba(26,42,29,0.62)">
-            <path d="M58 36 Q60 34 62 36" stroke-width="3"/>
-            <path class="wing left"  d="M60 36 Q40 18 18 26" stroke-width="3.2"/>
-            <path class="wing right" d="M60 36 Q80 18 102 26" stroke-width="3.2"/>
-          </g>
-          <g fill="none" stroke-linecap="round" stroke="rgba(197,160,89,0.28)">
-            <path class="wing left"  d="M60 36 Q43 22 22 28" stroke-width="2.1"/>
-            <path class="wing right" d="M60 36 Q77 22 98 28" stroke-width="2.1"/>
-          </g>
-        </svg>
-      `;
-
-      birdsHost.appendChild(bird);
-
-      const entryPan = -0.55 + Math.random() * 0.25;
-      const midPan   = -0.10 + Math.random() * 0.20;
-      const baseVol = 0.85 + Math.random() * 0.25;
-
-      setTimeout(() => {
-        pleasantChirp({ pan: entryPan, volume: baseVol });
-        if (Math.random() > 0.55) {
-          setTimeout(() => pleasantChirp({ pan: midPan, volume: baseVol * 0.92 }), (dur * 0.45) * 1000);
-        }
-        if (Math.random() > 0.7) {
-          setTimeout(() => pleasantChirp({ pan: entryPan, volume: baseVol * 0.72 }), 220 + Math.random() * 180);
-        }
-      }, delay * 1000);
-
-      setTimeout(() => bird.remove(), (dur + delay + 1) * 1000);
-    }
-
-    function startBirdFlights() {
-      spawnBird();
-      setInterval(() => { if (Math.random() > 0.35) spawnBird(); }, 2200);
-    }
-    startBirdFlights();
-
-    /* =========================
-       CARDS + REVEAL
-       ========================= */
-    const colorPalette = [
-      { name:"Ivory Silk", hex:"#fffdf0", quote:"To love at all is to be vulnerable.", source:"C.S. Lewis", movie:"Shadowlands", book:"The Four Loves" },
-      { name:"Vintage Champagne", hex:"#f5ead0", quote:"Love is not blind; it sees more, not less.", source:"Erich Fromm", movie:"In the Mood for Love", book:"A Lover's Discourse" },
-      { name:"Tudor Rose", hex:"#fce3e3", quote:"Everything that frightens us is something helpless that wants our love.", source:"Rainer Maria Rilke", movie:"The Shape of Water", book:"Letters to a Young Poet" },
-      { name:"English Lavender", hex:"#e8e1f5", quote:"It is not necessary to hurry intimacy.", source:"Anne Carson", movie:"Before Sunset", book:"Eros the Bittersweet" },
-      { name:"Versailles Sage", hex:"#e2ede4", quote:"The world is full of magic things, patiently waiting for our senses to grow sharper.", source:"W.B. Yeats", movie:"Song of the Sea", book:"The Wind Among the Reeds" },
-      { name:"Gilded Moss", hex:"#ecebbd", quote:"The only way to make sense out of change is to plunge into it.", source:"Alan Watts", movie:"Spring, Summer, Fall, Winter... and Spring", book:"The Wisdom of Insecurity" },
-      { name:"Biedermeier Blue", hex:"#e0f0f5", quote:"Loneliness is the poverty of self; solitude is the richness of self.", source:"May Sarton", movie:"Lost in Translation", book:"Journal of a Solitude" },
-      { name:"Old Manor Taupe", hex:"#ede6e1", quote:"Acceptance is a small, quiet room.", source:"Cheryl Strayed", movie:"Nomadland", book:"Tiny Beautiful Things" },
-      { name:"Terracotta Sundial", hex:"#f5e6d3", quote:"Beauty is in things imperfect, impermanent, and incomplete.", source:"Leonard Koren", movie:"Arrietty", book:"The Beauty of the Ordinary" },
-      { name:"Slate Manor", hex:"#e1e6e8", quote:"Love is the extremely difficult realization that something other than oneself is real.", source:"Iris Murdoch", movie:"Eternal Sunshine of the Spotless Mind", book:"The Sovereignty of Good" },
-      { name:"Linen Prayer", hex:"#fcfaf7", quote:"Love is not a relationship between one person and another, but a relationship between a person and love itself.", source:"Søren Kierkegaard", movie:"Still Walking", book:"Works of Love" },
-      { name:"Orchard Ash", hex:"#f0f0f0", quote:"Love, by its very nature, is unworldly.", source:"Hannah Arendt", movie:"A Hidden Life", book:"The Human Condition" },
-      { name:"Cemetery Stone", hex:"#e3e3e3", quote:"To be alone is to be with the world without intermediaries.", source:"Maurice Blanchot", movie:"Taste of Cherry", book:"The Space of Literature" },
-      { name:"Pale Concrete", hex:"#ededeb", quote:"Nothing is missing. Something is simply not added.", source:"Gilles Deleuze", movie:"Columbus", book:"Negotiations" },
-      { name:"Oat Chapel", hex:"#f3eddc", quote:"Love is an act of faith, and whoever is of little faith is also of little love.", source:"Erich Fromm", movie:"Ordet", book:"The Art of Loving" },
-      { name:"Ash Rose", hex:"#e6dede", quote:"Grief is the final manifestation of love.", source:"Joan Didion", movie:"Aftersun", book:"Blue Nights" }
-    ];
-
-    const deck = document.getElementById('deck-container');
-    const status = document.getElementById('status-text');
-    let shuffleState = 0;
-
-    function createDeck() {
-      for (let i = 0; i < 12; i++) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.zIndex = i;
-        card.innerHTML = '<div class="card-crest">❦</div>';
-        card.style.transform = `translate(${i * 0.5}px, ${i * 0.5}px)`;
-        card.onclick = () => {
-          if (shuffleState < 3) runShuffle();
-          else if (shuffleState === 4) revealCard();
-        };
-        deck.appendChild(card);
-      }
-    }
-
-    function runShuffle() {
-      shuffleState++;
-      const cards = document.querySelectorAll('.card');
-      cards.forEach((card) => {
-        const rx = (Math.random() - 0.5) * 400;
-        const ry = (Math.random() - 0.5) * 400;
-        const rr = (Math.random() - 0.5) * 100;
-        card.style.transform = `translate(${rx}px, ${ry}px) rotate(${rr}deg)`;
-      });
-      status.innerText = `Shuffling Intentions... (${shuffleState}/3)`;
-      setTimeout(() => {
-        cards.forEach((card, i) => card.style.transform = `translate(${i * 0.3}px, ${i * 0.3}px) rotate(0deg)`);
-        if (shuffleState === 3) setTimeout(fanCards, 600);
-      }, 800);
-    }
-
-    function fanCards() {
-      const cards = document.querySelectorAll('.card');
-      shuffleState = 4;
-      status.innerText = "Draw your heart's secret";
-
-      const windowWidth = window.innerWidth;
-      let spread, angleStep;
-
-      if (windowWidth < 480) { spread = 22; angleStep = 5; }
-      else if (windowWidth < 1024) { spread = 35; angleStep = 7; }
-      else { spread = 45; angleStep = 9; }
-
-      cards.forEach((card, i) => {
-        const centerOffset = (cards.length - 1) / 2;
-        const angle = (i - centerOffset) * angleStep;
-        const x = (i - centerOffset) * spread;
-        const y = windowWidth < 480 ? 10 : 20;
-        card.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
-      });
-    }
-
-    function revealCard() {
-      const data = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-      document.getElementById('ritual-screen').style.opacity = '0';
-      document.body.style.backgroundColor = data.hex;
-
-      setTimeout(() => {
-        document.getElementById('ritual-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        document.getElementById('quote-text').innerText = data.quote;
-        document.getElementById('quote-source').innerText = `— ${data.source}`;
-        document.getElementById('movie-title').innerText = data.movie;
-        document.getElementById('book-title').innerText = data.book;
-
-        setTimeout(() => { document.getElementById('result-screen').style.opacity = '1'; }, 100);
-
-        const b2 = document.getElementById('soundBtn2');
-        if (b2 && !b2.dataset.bound) {
-          b2.dataset.bound = "1";
-          b2.addEventListener('click', (e) => { e.stopPropagation(); toggleSound(); });
-          updateSoundButtons();
-        }
-      }, 1000);
-    }
-
-    function saveImage() {
-      const captureArea = document.getElementById('capture-frame');
-      html2canvas(captureArea, { backgroundColor: null, scale: 2 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'HeartToHeart_ISA.png';
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-    }
-
-    createDeck();
-
-    /* =========================
-       MODE + PHOTO + STICKERS (Fidelity)
-       ========================= */
-    const cardCanvas = document.getElementById("cardCanvas");
-    const decorLayer = document.getElementById("decorLayer");
-    const photoFrame = document.getElementById("photoFrame");
-    const userPhoto  = document.getElementById("userPhoto");
-
-    const modeSelect = document.getElementById("modeSelect");
-    const photoInput = document.getElementById("photoInput");
-    const photoInputWrap = document.getElementById("photoInputWrap");
-
-    const stickerSelect = document.getElementById("stickerSelect");
-    const stickerSize = document.getElementById("stickerSize");
-    const placeStickerBtn = document.getElementById("placeStickerBtn");
-    const clearStickersBtn = document.getElementById("clearStickersBtn");
-
-    // Store stickers in % for cross-device fidelity
-    const stickers = []; // {id, emoji, xPct, yPct, sizePx}
-
-    function pctFromPx(x, y){
-      const r = decorLayer.getBoundingClientRect();
-      return { xPct: x / r.width, yPct: y / r.height };
-    }
-    function pxFromPct(xPct, yPct){
-      const r = decorLayer.getBoundingClientRect();
-      return { x: xPct * r.width, y: yPct * r.height };
-    }
-
-    // clamp sticker center to canvas bounds so it cannot leave card borders
-    function clampToCanvas(x, y, el){
-      const host = decorLayer.getBoundingClientRect();
-      const rect = el.getBoundingClientRect();
-      const halfW = rect.width / 2;
-      const halfH = rect.height / 2;
-
-      const minX = halfW;
-      const maxX = host.width - halfW;
-      const minY = halfH;
-      const maxY = host.height - halfH;
-
-      return {
-        x: Math.max(minX, Math.min(maxX, x)),
-        y: Math.max(minY, Math.min(maxY, y)),
-      };
-    }
-
-    function setMode(mode){
-      cardCanvas.dataset.mode = mode;
-
-      const showPhoto = mode === "hybrid";
-      photoInputWrap.style.display = showPhoto ? "inline-flex" : "none";
-
-      if (!showPhoto){
-        // decor mode: remove photo entirely
-        if (userPhoto) {
-          userPhoto.removeAttribute("src");
-        }
-        if (photoInput) photoInput.value = "";
-      }
-    }
-
-    modeSelect.addEventListener("change", (e) => setMode(e.target.value));
-    setMode(modeSelect.value);
-
-    // Photo upload (works only in hybrid mode, but safe regardless)
-    photoInput.addEventListener("change", (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      userPhoto.src = URL.createObjectURL(file);
+  function updateSoundButtons() {
+    const label = soundOn ? "Sound: On" : "Sound: Off";
+    const btns = [document.getElementById("soundBtn"), document.getElementById("soundBtn2")].filter(Boolean);
+    btns.forEach(b => {
+      b.textContent = label;
+      b.classList.toggle("active", soundOn);
     });
+  }
 
-    function removeSticker(id){
-      const idx = stickers.findIndex(s => s.id === id);
-      if (idx >= 0) stickers.splice(idx, 1);
-      decorLayer.querySelector(`[data-id="${id}"]`)?.remove();
+  (function bindAutoStart() {
+    const once = async () => {
+      await primeAndApplyAudio();
+      window.removeEventListener("pointerdown", once);
+      window.removeEventListener("keydown", once);
+    };
+    window.addEventListener("pointerdown", once);
+    window.addEventListener("keydown", once);
+  })();
+
+  document.getElementById("soundBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleSound();
+  });
+
+  function pleasantChirp({ pan = 0, volume = 1 } = {}) {
+    if (!audioCtx || !audioPrimed || !soundOn) return;
+
+    const now = audioCtx.currentTime;
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+
+    osc1.type = "sine";
+    osc2.type = "triangle";
+    filter.type = "bandpass";
+    filter.frequency.value = 2600;
+    filter.Q.value = 9;
+
+    const base = 1350 + Math.random() * 950;
+    const sweepUp = 1.30 + Math.random() * 0.30;
+    const duration = 0.18 + Math.random() * 0.08;
+
+    osc1.frequency.setValueAtTime(base, now);
+    osc1.frequency.exponentialRampToValueAtTime(base * sweepUp, now + duration * 0.65);
+    osc2.frequency.setValueAtTime(base * 0.985, now);
+    osc2.frequency.exponentialRampToValueAtTime(base * sweepUp * 1.02, now + duration * 0.65);
+
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.type = "sine";
+    lfo.frequency.value = 10 + Math.random() * 3;
+    lfoGain.gain.value = 14 + Math.random() * 9;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc1.frequency);
+    lfoGain.connect(osc2.frequency);
+
+    const peak = 0.045 * volume;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(peak, now + 0.028);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+
+    if (panner) {
+      panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), now);
+      filter.connect(panner);
+      panner.connect(gain);
+    } else {
+      filter.connect(gain);
+    }
+    gain.connect(masterGain);
+
+    lfo.start(now);
+    osc1.start(now);
+    osc2.start(now);
+
+    const stopAt = now + duration + 0.02;
+    lfo.stop(stopAt);
+    osc1.stop(stopAt);
+    osc2.stop(stopAt);
+  }
+
+  updateSoundButtons();
+
+  /* =========================
+     BIRDS (visual + sound synced)
+     ========================= */
+  const birdsHost = document.getElementById('birds');
+
+  function spawnBird() {
+    if (!birdsHost) return;
+
+    const bird = document.createElement('div');
+    bird.className = 'bird';
+
+    const mode = Math.random() > 0.5 ? "up" : "down";
+    const fromX = "-25vw";
+    const toX   = "120vw";
+
+    const fromY = mode === "up"
+      ? (65 + Math.random() * 25) + "vh"
+      : (10 + Math.random() * 25) + "vh";
+
+    const toY = mode === "up"
+      ? (8 + Math.random() * 25) + "vh"
+      : (55 + Math.random() * 30) + "vh";
+
+    const dur = 9 + Math.random() * 10;
+    const delay = Math.random() * 2.5;
+    const scale = (0.75 + Math.random() * 0.7).toFixed(2);
+    const opacity = (0.28 + Math.random() * 0.35).toFixed(2);
+
+    bird.style.setProperty('--fromX', fromX);
+    bird.style.setProperty('--toX', toX);
+    bird.style.setProperty('--fromY', fromY);
+    bird.style.setProperty('--toY', toY);
+    bird.style.setProperty('--s', scale);
+    bird.style.animationDuration = dur + "s";
+    bird.style.animationDelay = delay + "s";
+    bird.style.opacity = opacity;
+
+    bird.innerHTML = `
+      <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" stroke-linecap="round" stroke="rgba(26,42,29,0.62)">
+          <path d="M58 36 Q60 34 62 36" stroke-width="3"/>
+          <path class="wing left"  d="M60 36 Q40 18 18 26" stroke-width="3.2"/>
+          <path class="wing right" d="M60 36 Q80 18 102 26" stroke-width="3.2"/>
+        </g>
+        <g fill="none" stroke-linecap="round" stroke="rgba(197,160,89,0.28)">
+          <path class="wing left"  d="M60 36 Q43 22 22 28" stroke-width="2.1"/>
+          <path class="wing right" d="M60 36 Q77 22 98 28" stroke-width="2.1"/>
+        </g>
+      </svg>
+    `;
+
+    birdsHost.appendChild(bird);
+
+    const entryPan = -0.55 + Math.random() * 0.25;
+    const midPan   = -0.10 + Math.random() * 0.20;
+    const baseVol = 0.85 + Math.random() * 0.25;
+
+    setTimeout(() => {
+      pleasantChirp({ pan: entryPan, volume: baseVol });
+      if (Math.random() > 0.55) {
+        setTimeout(() => pleasantChirp({ pan: midPan, volume: baseVol * 0.92 }), (dur * 0.45) * 1000);
+      }
+      if (Math.random() > 0.7) {
+        setTimeout(() => pleasantChirp({ pan: entryPan, volume: baseVol * 0.72 }), 220 + Math.random() * 180);
+      }
+    }, delay * 1000);
+
+    setTimeout(() => bird.remove(), (dur + delay + 1) * 1000);
+  }
+
+  function startBirdFlights() {
+    spawnBird();
+    setInterval(() => { if (Math.random() > 0.35) spawnBird(); }, 2200);
+  }
+  startBirdFlights();
+
+  /* =========================
+     CARDS + REVEAL
+     ========================= */
+  const colorPalette = [
+    { name:"Ivory Silk", hex:"#fffdf0", quote:"To love at all is to be vulnerable.", source:"C.S. Lewis", movie:"Shadowlands", book:"The Four Loves" },
+    { name:"Vintage Champagne", hex:"#f5ead0", quote:"Love is not blind; it sees more, not less.", source:"Erich Fromm", movie:"In the Mood for Love", book:"A Lover's Discourse" },
+    { name:"Tudor Rose", hex:"#fce3e3", quote:"Everything that frightens us is something helpless that wants our love.", source:"Rainer Maria Rilke", movie:"The Shape of Water", book:"Letters to a Young Poet" },
+    { name:"English Lavender", hex:"#e8e1f5", quote:"It is not necessary to hurry intimacy.", source:"Anne Carson", movie:"Before Sunset", book:"Eros the Bittersweet" },
+    { name:"Versailles Sage", hex:"#e2ede4", quote:"The world is full of magic things, patiently waiting for our senses to grow sharper.", source:"W.B. Yeats", movie:"Song of the Sea", book:"The Wind Among the Reeds" },
+    { name:"Gilded Moss", hex:"#ecebbd", quote:"The only way to make sense out of change is to plunge into it.", source:"Alan Watts", movie:"Spring, Summer, Fall, Winter... and Spring", book:"The Wisdom of Insecurity" },
+    { name:"Biedermeier Blue", hex:"#e0f0f5", quote:"Loneliness is the poverty of self; solitude is the richness of self.", source:"May Sarton", movie:"Lost in Translation", book:"Journal of a Solitude" },
+    { name:"Old Manor Taupe", hex:"#ede6e1", quote:"Acceptance is a small, quiet room.", source:"Cheryl Strayed", movie:"Nomadland", book:"Tiny Beautiful Things" },
+    { name:"Terracotta Sundial", hex:"#f5e6d3", quote:"Beauty is in things imperfect, impermanent, and incomplete.", source:"Leonard Koren", movie:"Arrietty", book:"The Beauty of the Ordinary" },
+    { name:"Slate Manor", hex:"#e1e6e8", quote:"Love is the extremely difficult realization that something other than oneself is real.", source:"Iris Murdoch", movie:"Eternal Sunshine of the Spotless Mind", book:"The Sovereignty of Good" },
+    { name:"Linen Prayer", hex:"#fcfaf7", quote:"Love is not a relationship between one person and another, but a relationship between a person and love itself.", source:"Søren Kierkegaard", movie:"Still Walking", book:"Works of Love" },
+    { name:"Orchard Ash", hex:"#f0f0f0", quote:"Love, by its very nature, is unworldly.", source:"Hannah Arendt", movie:"A Hidden Life", book:"The Human Condition" },
+    { name:"Cemetery Stone", hex:"#e3e3e3", quote:"To be alone is to be with the world without intermediaries.", source:"Maurice Blanchot", movie:"Taste of Cherry", book:"The Space of Literature" },
+    { name:"Pale Concrete", hex:"#ededeb", quote:"Nothing is missing. Something is simply not added.", source:"Gilles Deleuze", movie:"Columbus", book:"Negotiations" },
+    { name:"Oat Chapel", hex:"#f3eddc", quote:"Love is an act of faith, and whoever is of little faith is also of little love.", source:"Erich Fromm", movie:"Ordet", book:"The Art of Loving" },
+    { name:"Ash Rose", hex:"#e6dede", quote:"Grief is the final manifestation of love.", source:"Joan Didion", movie:"Aftersun", book:"Blue Nights" }
+  ];
+
+  const deck = document.getElementById('deck-container');
+  const status = document.getElementById('status-text');
+  let shuffleState = 0;
+
+  function createDeck() {
+    for (let i = 0; i < 12; i++) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.zIndex = i;
+      card.innerHTML = '<div class="card-crest">❦</div>';
+      card.style.transform = `translate(${i * 0.5}px, ${i * 0.5}px)`;
+      card.onclick = () => {
+        if (shuffleState < 3) runShuffle();
+        else if (shuffleState === 4) revealCard();
+      };
+      deck.appendChild(card);
+    }
+  }
+
+  function runShuffle() {
+    shuffleState++;
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card) => {
+      const rx = (Math.random() - 0.5) * 400;
+      const ry = (Math.random() - 0.5) * 400;
+      const rr = (Math.random() - 0.5) * 100;
+      card.style.transform = `translate(${rx}px, ${ry}px) rotate(${rr}deg)`;
+    });
+    status.innerText = `Shuffling Intentions... (${shuffleState}/3)`;
+    setTimeout(() => {
+      cards.forEach((card, i) => card.style.transform = `translate(${i * 0.3}px, ${i * 0.3}px) rotate(0deg)`);
+      if (shuffleState === 3) setTimeout(fanCards, 600);
+    }, 800);
+  }
+
+  function fanCards() {
+    const cards = document.querySelectorAll('.card');
+    shuffleState = 4;
+    status.innerText = "Draw your heart's secret";
+
+    const windowWidth = window.innerWidth;
+    let spread, angleStep;
+
+    if (windowWidth < 480) { spread = 22; angleStep = 5; }
+    else if (windowWidth < 1024) { spread = 35; angleStep = 7; }
+    else { spread = 45; angleStep = 9; }
+
+    cards.forEach((card, i) => {
+      const centerOffset = (cards.length - 1) / 2;
+      const angle = (i - centerOffset) * angleStep;
+      const x = (i - centerOffset) * spread;
+      const y = windowWidth < 480 ? 10 : 20;
+      card.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
+    });
+  }
+
+  function revealCard() {
+    const data = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    document.getElementById('ritual-screen').style.opacity = '0';
+    document.body.style.backgroundColor = data.hex;
+
+    setTimeout(() => {
+      document.getElementById('ritual-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'block';
+
+      document.getElementById('quote-text').innerText = data.quote;
+      document.getElementById('quote-source').innerText = `— ${data.source}`;
+      document.getElementById('movie-title').innerText = data.movie;
+      document.getElementById('book-title').innerText = data.book;
+
+      setTimeout(() => { document.getElementById('result-screen').style.opacity = '1'; }, 60);
+
+      const b2 = document.getElementById('soundBtn2');
+      if (b2 && !b2.dataset.bound) {
+        b2.dataset.bound = "1";
+        b2.addEventListener('click', (e) => { e.stopPropagation(); toggleSound(); });
+        updateSoundButtons();
+      }
+    }, 900);
+  }
+
+  /* =========================
+     SAVE / RESET
+     ========================= */
+  function saveImage() {
+    const captureArea = document.getElementById('capture-frame');
+    html2canvas(captureArea, { backgroundColor: null, scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'HeartToHeart_ISA.png';
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", saveImage);
+  document.getElementById("resetBtn").addEventListener("click", () => location.reload());
+
+  createDeck();
+
+  /* =========================
+     MODE + PHOTO + STICKERS
+     ========================= */
+  const cardCanvas = document.getElementById("cardCanvas");
+  const decorLayer = document.getElementById("decorLayer");
+  const photoFrame = document.getElementById("photoFrame");
+  const userPhoto = document.getElementById("userPhoto");
+  const modeSelect = document.getElementById("modeSelect");
+  const photoInput = document.getElementById("photoInput");
+  const photoInputWrap = document.getElementById("photoInputWrap");
+  const stickerSelect = document.getElementById("stickerSelect");
+  const stickerSize = document.getElementById("stickerSize");
+  const placeStickerBtn = document.getElementById("placeStickerBtn");
+  const clearStickersBtn = document.getElementById("clearStickersBtn");
+
+  const stickers = [];
+
+  function setMode(mode) {
+    const isHybrid = mode === "hybrid";
+    cardCanvas.dataset.mode = mode;
+    photoInputWrap.style.display = isHybrid ? "inline-flex" : "none";
+    photoFrame.style.display = isHybrid ? "block" : "none";
+    if (!isHybrid) {
+      userPhoto.removeAttribute("src");
+      photoInput.value = "";
+    }
+  }
+
+  modeSelect.addEventListener("change", (e) => setMode(e.target.value));
+  setMode(modeSelect.value);
+
+  photoInput.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    userPhoto.src = URL.createObjectURL(file);
+  });
+
+  function pctFromPx(x, y) {
+    const r = decorLayer.getBoundingClientRect();
+    return { xPct: x / r.width, yPct: y / r.height };
+  }
+  function pxFromPct(xPct, yPct) {
+    const r = decorLayer.getBoundingClientRect();
+    return { x: xPct * r.width, y: yPct * r.height };
+  }
+  function clampToCanvas(x, y, el) {
+    const host = decorLayer.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    const halfW = rect.width / 2;
+    const halfH = rect.height / 2;
+    return {
+      x: Math.max(halfW, Math.min(host.width - halfW, x)),
+      y: Math.max(halfH, Math.min(host.height - halfH, y)),
+    };
+  }
+
+  function removeSticker(id) {
+    const idx = stickers.findIndex(s => s.id === id);
+    if (idx !== -1) stickers.splice(idx, 1);
+    const el = decorLayer.querySelector(`[data-id="${id}"]`);
+    if (el) el.remove();
+  }
+
+  function addStickerAtPx(x, y) {
+    const emoji = stickerSelect.value || "🩷";
+    const size = Number(stickerSize.value || 34);
+
+    const el = document.createElement("div");
+    el.className = "sticker";
+    el.textContent = emoji;
+    el.style.fontSize = size + "px";
+    decorLayer.appendChild(el);
+
+    const clamped = clampToCanvas(x, y, el);
+    el.style.left = clamped.x + "px";
+    el.style.top = clamped.y + "px";
+
+    const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
+    const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+    stickers.push({ id, emoji, xPct, yPct, sizePx: size });
+    el.dataset.id = id;
+
+    makeDraggable(el, id);
+
+    el.addEventListener("contextmenu", (ev) => {
+      ev.preventDefault();
+      removeSticker(id);
+    });
+  }
+
+  function makeDraggable(el, id) {
+    let dragging = false;
+
+    function onDown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true;
+      el.setPointerCapture?.(e.pointerId);
+      el.style.cursor = "grabbing";
     }
 
-    function makeDraggable(el, id){
-      let dragging = false;
-      let offsetX = 0, offsetY = 0;
-
-      el.addEventListener("pointerdown", (e) => {
-        dragging = true;
-        el.setPointerCapture(e.pointerId);
-        const r = el.getBoundingClientRect();
-        offsetX = e.clientX - r.left - r.width/2;
-        offsetY = e.clientY - r.top  - r.height/2;
-        e.stopPropagation();
-      });
-
-      el.addEventListener("pointermove", (e) => {
-        if (!dragging) return;
-
-        const host = decorLayer.getBoundingClientRect();
-        const xRaw = (e.clientX - host.left) - offsetX;
-        const yRaw = (e.clientY - host.top)  - offsetY;
-
-        const clamped = clampToCanvas(xRaw, yRaw, el);
-        el.style.left = clamped.x + "px";
-        el.style.top  = clamped.y + "px";
-
-        const rec = stickers.find(s => s.id === id);
-        if (rec){
-          const p = pctFromPx(clamped.x, clamped.y);
-          rec.xPct = p.xPct;
-          rec.yPct = p.yPct;
-        }
-      });
-
-      el.addEventListener("pointerup", () => dragging = false);
-      el.addEventListener("pointercancel", () => dragging = false);
-    }
-
-    function addStickerAtPx(x, y){
-      const emoji = stickerSelect.value || "🩷";
-      const size = Number(stickerSize.value || 34);
-
-      const el = document.createElement("div");
-      el.className = "sticker";
-      el.textContent = emoji;
-      el.style.fontSize = size + "px";
-      decorLayer.appendChild(el);
+    function onMove(e) {
+      if (!dragging) return;
+      const host = decorLayer.getBoundingClientRect();
+      const x = e.clientX - host.left;
+      const y = e.clientY - host.top;
 
       const clamped = clampToCanvas(x, y, el);
       el.style.left = clamped.x + "px";
-      el.style.top  = clamped.y + "px";
+      el.style.top = clamped.y + "px";
 
       const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
-      const id = (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
-      stickers.push({ id, emoji, xPct, yPct, sizePx: size });
-      el.dataset.id = id;
-
-      // delete: right click / long press
-      el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(id); });
-      let pressTimer = null;
-      el.addEventListener("pointerdown", () => { pressTimer = setTimeout(() => removeSticker(id), 550); });
-      el.addEventListener("pointerup", () => clearTimeout(pressTimer));
-      el.addEventListener("pointercancel", () => clearTimeout(pressTimer));
-      el.addEventListener("pointermove", () => clearTimeout(pressTimer));
-
-      makeDraggable(el, id);
+      const s = stickers.find(s => s.id === id);
+      if (s) { s.xPct = xPct; s.yPct = yPct; }
     }
 
-    // tap inside canvas to place
-    decorLayer.addEventListener("click", (e) => {
-      if (e.target.classList?.contains("sticker")) return;
-      const r = decorLayer.getBoundingClientRect();
-      addStickerAtPx(e.clientX - r.left, e.clientY - r.top);
-    });
+    function onUp(e) {
+      dragging = false;
+      el.releasePointerCapture?.(e.pointerId);
+      el.style.cursor = "grab";
+    }
 
-    placeStickerBtn.addEventListener("click", () => {
-      const r = decorLayer.getBoundingClientRect();
-      addStickerAtPx(r.width/2, r.height/2);
-    });
+    el.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    el.style.cursor = "grab";
+  }
 
-    clearStickersBtn.addEventListener("click", () => {
-      stickers.length = 0;
-      decorLayer.innerHTML = "";
-    });
+  // Tap/Click to place (only when not tapping an existing sticker)
+  decorLayer.addEventListener("pointerdown", (e) => {
+    if (e.target.classList?.contains("sticker")) return;
+    const r = decorLayer.getBoundingClientRect();
+    addStickerAtPx(e.clientX - r.left, e.clientY - r.top);
+  });
 
-    function rerenderFromModel(){
-      for (const s of stickers){
-        let el = decorLayer.querySelector(`[data-id="${s.id}"]`);
-        if (!el){
-          el = document.createElement("div");
-          el.className = "sticker";
-          el.dataset.id = s.id;
-          el.textContent = s.emoji;
-          decorLayer.appendChild(el);
-          makeDraggable(el, s.id);
-          el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(s.id); });
-        }
-        el.style.fontSize = s.sizePx + "px";
-        const { x, y } = pxFromPct(s.xPct, s.yPct);
-        const clamped = clampToCanvas(x, y, el);
-        el.style.left = clamped.x + "px";
-        el.style.top  = clamped.y + "px";
+  placeStickerBtn.addEventListener("click", () => {
+    const r = decorLayer.getBoundingClientRect();
+    addStickerAtPx(r.width / 2, r.height / 2);
+  });
+
+  clearStickersBtn.addEventListener("click", () => {
+    stickers.length = 0;
+    decorLayer.innerHTML = "";
+  });
+
+  function rerenderFromModel() {
+    for (const s of stickers) {
+      let el = decorLayer.querySelector(`[data-id="${s.id}"]`);
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "sticker";
+        el.dataset.id = s.id;
+        el.textContent = s.emoji;
+        decorLayer.appendChild(el);
+        makeDraggable(el, s.id);
+        el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(s.id); });
       }
+
+      el.style.fontSize = s.sizePx + "px";
+      const { x, y } = pxFromPct(s.xPct, s.yPct);
+      const clamped = clampToCanvas(x, y, el);
+      el.style.left = clamped.x + "px";
+      el.style.top = clamped.y + "px";
     }
-    window.addEventListener("resize", rerenderFromModel);
-  </script>
+  }
+
+  window.addEventListener("resize", rerenderFromModel);
+</script>
 </body>
 </html>
