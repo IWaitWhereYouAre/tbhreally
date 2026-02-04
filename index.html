@@ -9,442 +9,438 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&family=Pinyon+Script&display=swap');
 
-    :root {
-      --gold: #c5a059;
-      --deep-green: #1a2a1d;
-      --cream: #f8f5f0;
-      --blush: #e8d5d1;
+    :root{
+      --gold:#c5a059;
+      --deep-green:#1a2a1d;
+      --cream:#f8f5f0;
+      --blush:#e8d5d1;
     }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background: var(--cream);
-      overflow: hidden;
-      -webkit-text-size-adjust: 100%;
-      touch-action: manipulation;
+    /* Mobile/Safari stability */
+    html,body{
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+      background:var(--cream);
+      overflow:hidden;
+      -webkit-text-size-adjust:100%;
+      touch-action:manipulation;
     }
 
-    body {
-      min-height: 100svh;
-      background-color: var(--cream);
-      color: var(--deep-green);
-      font-family: 'Lato', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: background-color 2s ease;
-      position: relative;
+    body{
+      min-height:100svh;
+      background-color:var(--cream);
+      color:var(--deep-green);
+      font-family:'Lato',sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      transition:background-color 2s ease;
+      position:relative;
     }
 
-    #app-container {
-      text-align: center;
-      width: 100%;
-      max-width: 1200px;
-      padding: 20px;
-      z-index: 10;
-      box-sizing: border-box;
-      position: relative;
+    #app-container{
+      text-align:center;
+      width:100%;
+      max-width:1200px;
+      padding:20px;
+      z-index:10;
+      box-sizing:border-box;
+      position:relative;
     }
 
     /* =========================
        SECRET GARDEN BACKGROUND
        ========================= */
-    .garden-bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
+    .garden-bg{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      overflow:hidden;
       background:
         radial-gradient(900px 700px at 20% 20%, rgba(197,160,89,0.14), transparent 60%),
         radial-gradient(800px 650px at 80% 30%, rgba(232,213,209,0.18), transparent 55%),
         radial-gradient(900px 700px at 40% 90%, rgba(26,42,29,0.14), transparent 55%),
         linear-gradient(120deg, rgba(248,245,240,1), rgba(248,245,240,1));
     }
-
-    .garden-bg::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
+    .garden-bg::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
       background:
         radial-gradient(circle at 20% 30%, rgba(255,255,255,0.55), transparent 55%),
         radial-gradient(circle at 70% 40%, rgba(255,255,255,0.35), transparent 60%),
         radial-gradient(circle at 50% 70%, rgba(255,255,255,0.25), transparent 65%),
         linear-gradient(120deg, rgba(197,160,89,0.08), rgba(232,213,209,0.10), rgba(26,42,29,0.06));
-      filter: blur(18px);
-      opacity: 0.9;
-      animation: gardenDrift 18s ease-in-out infinite;
-      transform: translate3d(0,0,0);
+      filter:blur(18px);
+      opacity:0.9;
+      animation:gardenDrift 18s ease-in-out infinite;
+      transform:translate3d(0,0,0);
     }
-
-    .garden-bg::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
-      opacity: 0.55;
-      mix-blend-mode: multiply;
+    .garden-bg::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:url("https://www.transparenttextures.com/patterns/natural-paper.png");
+      opacity:0.55;
+      mix-blend-mode:multiply;
     }
-
-    @keyframes gardenDrift {
-      0%   { transform: translate(-4%, -2%) rotate(-2deg); }
-      50%  { transform: translate(4%, 2%) rotate(2deg); }
-      100% { transform: translate(-4%, -2%) rotate(-2deg); }
+    @keyframes gardenDrift{
+      0%{transform:translate(-4%,-2%) rotate(-2deg);}
+      50%{transform:translate(4%,2%) rotate(2deg);}
+      100%{transform:translate(-4%,-2%) rotate(-2deg);}
     }
 
     /* =========================
        PETALS
        ========================= */
-    .petals {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      overflow: hidden;
+    .petals{
+      position:fixed;
+      inset:0;
+      z-index:2;
+      pointer-events:none;
+      overflow:hidden;
     }
-    .petal {
-      position: absolute;
-      top: -10%;
-      width: 10px;
-      height: 16px;
-      border-radius: 60% 40% 60% 40%;
-      background: rgba(232,213,209,0.55);
-      box-shadow: 0 0 0 1px rgba(197,160,89,0.08);
-      filter: blur(0.15px);
-      animation: fall linear infinite;
-      transform: rotate(12deg);
-      opacity: 0.85;
+    .petal{
+      position:absolute;
+      top:-10%;
+      width:10px;
+      height:16px;
+      border-radius:60% 40% 60% 40%;
+      background:rgba(232,213,209,0.55);
+      box-shadow:0 0 0 1px rgba(197,160,89,0.08);
+      filter:blur(0.15px);
+      animation:fall linear infinite;
+      transform:rotate(12deg);
+      opacity:0.85;
     }
-    @keyframes fall {
-      0%   { transform: translate3d(0, -20px, 0) rotate(10deg); }
-      100% { transform: translate3d(0, 120vh, 0) rotate(260deg); }
+    @keyframes fall{
+      0%{transform:translate3d(0,-20px,0) rotate(10deg);}
+      100%{transform:translate3d(0,120vh,0) rotate(260deg);}
     }
 
     /* =========================
        BIRDS
        ========================= */
-    .birds {
-      position: fixed;
-      inset: 0;
-      z-index: 3;
-      pointer-events: none;
-      overflow: hidden;
-      opacity: 0.65;
-      filter: blur(0.1px);
+    .birds{
+      position:fixed;
+      inset:0;
+      z-index:3;
+      pointer-events:none;
+      overflow:hidden;
+      opacity:0.65;
+      filter:blur(0.1px);
     }
-    .bird {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 56px;
-      height: 30px;
-      opacity: 0.55;
-      animation: flyDiag linear infinite;
-      transform: translate3d(var(--fromX), var(--fromY), 0) scale(var(--s, 1));
-      will-change: transform, opacity;
+    .bird{
+      position:absolute;
+      left:0;
+      top:0;
+      width:56px;
+      height:30px;
+      opacity:0.55;
+      animation:flyDiag linear infinite;
+      transform:translate3d(var(--fromX),var(--fromY),0) scale(var(--s,1));
+      will-change:transform,opacity;
     }
-    @keyframes flyDiag {
-      0%   { transform: translate3d(var(--fromX), var(--fromY), 0) scale(var(--s, 1)); opacity: 0; }
-      10%  { opacity: 0.65; }
-      90%  { opacity: 0.55; }
-      100% { transform: translate3d(var(--toX), var(--toY), 0) scale(var(--s, 1)); opacity: 0; }
+    @keyframes flyDiag{
+      0%{transform:translate3d(var(--fromX),var(--fromfromY, var(--fromY)),0) scale(var(--s,1)); opacity:0;}
+      10%{opacity:0.65;}
+      90%{opacity:0.55;}
+      100%{transform:translate3d(var(--toX),var(--toY),0) scale(var(--s,1)); opacity:0;}
     }
-    .bird .wing { transform-box: fill-box; transform-origin: center; animation: flap 0.35s ease-in-out infinite; }
-    .bird .wing.right { animation-delay: 0.02s; }
-    @keyframes flap {
-      0%   { transform: rotate(8deg) scaleY(1); }
-      50%  { transform: rotate(-18deg) scaleY(0.92); }
-      100% { transform: rotate(8deg) scaleY(1); }
+    .bird .wing{transform-box:fill-box; transform-origin:center; animation:flap 0.35s ease-in-out infinite;}
+    .bird .wing.right{animation-delay:0.02s;}
+    @keyframes flap{
+      0%{transform:rotate(8deg) scaleY(1);}
+      50%{transform:rotate(-18deg) scaleY(0.92);}
+      100%{transform:rotate(8deg) scaleY(1);}
     }
 
     /* Decorative */
-    .vignette {
-      position: fixed; inset: 0;
-      background: radial-gradient(circle, transparent 50%, rgba(26, 42, 29, 0.1));
-      pointer-events: none; z-index: 5;
+    .vignette{
+      position:fixed; inset:0;
+      background:radial-gradient(circle, transparent 50%, rgba(26,42,29,0.1));
+      pointer-events:none; z-index:5;
     }
-    .botanical { position: fixed; width: 450px; opacity: 0.12; pointer-events: none; z-index: 3; }
-    .top-left { top: -120px; left: -120px; transform: rotate(15deg); }
-    .bottom-right { bottom: -120px; right: -120px; transform: rotate(195deg); }
+    .botanical{position:fixed; width:450px; opacity:0.12; pointer-events:none; z-index:3;}
+    .top-left{top:-120px; left:-120px; transform:rotate(15deg);}
+    .bottom-right{bottom:-120px; right:-120px; transform:rotate(195deg);}
 
     /* =========================
        HEADERS
        ========================= */
-    .isa-tag {
-      font-size: 0.6rem;
-      letter-spacing: 3px;
-      margin-bottom: 8px;
-      opacity: 0.7;
-      text-transform: uppercase;
+    .isa-tag{
+      font-size:0.6rem;
+      letter-spacing:3px;
+      margin-bottom:8px;
+      opacity:0.7;
+      text-transform:uppercase;
     }
-
-    h1.main-title {
-      font-family: 'Pinyon Script', cursive;
-      font-size: clamp(3rem, 12vw, 6rem);
-      color: var(--gold);
-      margin: 0;
-      line-height: 1.1;
+    h1.main-title{
+      font-family:'Pinyon Script',cursive;
+      font-size:clamp(3rem,12vw,6rem);
+      color:var(--gold);
+      margin:0;
+      line-height:1.1;
     }
-
-    .sub-theme {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(0.7rem, 2vw, 1rem);
-      letter-spacing: clamp(4px, 1vw, 10px);
-      text-transform: uppercase;
-      margin-bottom: clamp(20px, 5vh, 50px);
+    .sub-theme{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(0.7rem,2vw,1rem);
+      letter-spacing:clamp(4px,1vw,10px);
+      text-transform:uppercase;
+      margin-bottom:clamp(20px,5vh,50px);
     }
 
     /* =========================
        DECK
        ========================= */
-    .deck-area {
-      position: relative;
-      height: clamp(250px, 40vh, 400px);
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      perspective: 1000px;
+    .deck-area{
+      position:relative;
+      height:clamp(250px,40vh,400px);
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      perspective:1000px;
     }
-
-    .card {
-      position: absolute;
-      width: clamp(120px, 25vw, 180px);
-      height: clamp(170px, 35vh, 260px);
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
-      overflow: hidden;
+    .card{
+      position:absolute;
+      width:clamp(120px,25vw,180px);
+      height:clamp(170px,35vh,260px);
+      background:#fff;
+      border-radius:4px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.1);
+      cursor:pointer;
+      transition:all 0.8s cubic-bezier(0.2,1,0.3,1);
+      overflow:hidden;
     }
-
-    .card::after {
-      content: '';
-      position: absolute;
-      inset: 8px;
-      border: 1px solid var(--gold);
-      background-color: var(--deep-green);
-      background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+    .card::after{
+      content:'';
+      position:absolute;
+      inset:8px;
+      border:1px solid var(--gold);
+      background-color:var(--deep-green);
+      background-image:url("https://www.transparenttextures.com/patterns/dark-matter.png");
     }
-
-    .card-crest {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: var(--gold);
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      z-index: 2;
-      opacity: 0.6;
-      pointer-events: none;
+    .card-crest{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      color:var(--gold);
+      font-family:'Playfair Display',serif;
+      font-size:2rem;
+      z-index:2;
+      opacity:0.6;
+      pointer-events:none;
     }
 
     /* =========================
        RESULT
        ========================= */
-    #result-screen { display: none; opacity: 0; }
+    #result-screen{display:none; opacity:0;}
 
-    #capture-frame {
-      background: #fff;
-      padding: clamp(30px, 5vw, 60px) clamp(20px, 4vw, 40px);
-      width: 90vw;
-      max-width: 400px;
-      margin: 0 auto;
-      position: relative;
-      box-sizing: border-box;
-      border: 1px solid rgba(197, 160, 89, 0.2);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.05);
-      background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+    /* Proportional card container that looks consistent across devices */
+    #capture-frame{
+      background:#fff;
+      padding:clamp(26px,4.5vw,56px) clamp(18px,4vw,40px);
+      width:min(92vw, 420px);
+      margin:0 auto;
+      position:relative;
+      box-sizing:border-box;
+      border:1px solid rgba(197,160,89,0.2);
+      box-shadow:0 30px 60px rgba(0,0,0,0.05);
+      background-image:url("https://www.transparenttextures.com/patterns/paper-fibers.png");
     }
-    #capture-frame::before {
-      content: "";
-      position: absolute;
-      inset: 15px;
-      border: 0.5px solid var(--gold);
-      pointer-events: none;
-    }
-
-    .result-isa {
-      font-size: 0.55rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--gold);
-      display: block;
-      margin-bottom: 20px;
+    #capture-frame::before{
+      content:"";
+      position:absolute;
+      inset:14px;
+      border:0.5px solid var(--gold);
+      pointer-events:none;
     }
 
-    .result-theme {
-      font-family: 'Pinyon Script', cursive;
-      font-size: 2.8rem;
-      color: var(--deep-green);
-      margin: 0;
+    .result-isa{
+      font-size:0.55rem;
+      letter-spacing:4px;
+      text-transform:uppercase;
+      color:var(--gold);
+      display:block;
+      margin-bottom:18px;
     }
 
-    .quote-box {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.2rem, 4vw, 1.8rem);
-      line-height: 1.4;
-      margin: 30px 0;
-      font-style: italic;
+    .result-theme{
+      font-family:'Pinyon Script',cursive;
+      font-size:2.8rem;
+      color:var(--deep-green);
+      margin:0;
+      line-height:1.02;
     }
 
-    .quote-author {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.7rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      opacity: 0.6;
+    .quote-box{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(1.15rem, 4.2vw, 1.85rem);
+      line-height:1.38;
+      margin:22px 0 18px;
+      font-style:italic;
+    }
+    .quote-author{
+      font-family:'Lato',sans-serif;
+      font-size:0.72rem;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      opacity:0.6;
     }
 
-    .recommendation {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 0.5px solid rgba(0,0,0,0.1);
-      text-align: left;
+    .recommendation{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      margin-top:22px;
+      padding-top:16px;
+      border-top:0.5px solid rgba(0,0,0,0.1);
+      text-align:left;
     }
-
-    .rec-label {
-      font-size: 0.5rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--gold);
-      display: block;
+    .rec-label{
+      font-size:0.5rem;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      color:var(--gold);
+      display:block;
     }
-
-    .rec-val { font-family: 'Playfair Display', serif; font-size: 0.9rem; }
-
-    /* =========================
-       BUTTONS
-       ========================= */
-    .btn-group {
-      margin-top: 30px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      background: none;
-      border: 1px solid var(--gold);
-      padding: 10px 20px;
-      font-family: 'Lato', sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      transition: 0.3s;
-      backdrop-filter: blur(4px);
-      flex: 1 1 auto;
-      min-width: 120px;
-      max-width: 200px;
-    }
-
-    .btn-save { background: var(--gold); color: #fff; }
-    .btn-save:hover { background: var(--deep-green); border-color: var(--deep-green); }
-
-    .btn-sound {
-      border-color: rgba(197,160,89,0.65);
-      color: var(--deep-green);
-      background: rgba(255,255,255,0.45);
-    }
-    .btn-sound.active {
-      background: rgba(26,42,29,0.85);
-      color: #fff;
-      border-color: rgba(26,42,29,0.85);
-    }
+    .rec-val{font-family:'Playfair Display',serif; font-size:0.95rem;}
 
     /* =========================
        CARD CANVAS (CAPTURED)
        ========================= */
     .card-canvas{
-      position: relative;
-      width: 100%;
-      max-width: 420px;
-      margin: 18px auto 10px;
-      aspect-ratio: 4 / 5; /* lock proportions */
-      border-radius: 12px;
-      overflow: hidden; /* clip to card borders */
-      border: 1px solid rgba(197,160,89,0.25);
-      background: rgba(255,255,255,0.55);
+      position:relative;
+      width:100%;
+      margin:16px auto 10px;
+      border-radius:14px;
+      overflow:hidden; /* CLIP to card borders */
+      border:1px solid rgba(197,160,89,0.25);
+      background:rgba(255,255,255,0.6);
+      aspect-ratio: 4 / 5;   /* consistent proportion across devices */
+      max-height: 52vh;      /* keeps it visible on small screens */
     }
 
+    /* Photo frame (inside canvas) */
     .photo-frame{
-      position: absolute;
-      left: 8%;
-      right: 8%;
-      top: 10%;
-      height: 44%;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid rgba(197,160,89,0.25);
-      background: rgba(255,255,255,0.6);
+      position:absolute;
+      left:7.5%;
+      right:7.5%;
+      top:10%;
+      height:46%;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid rgba(197,160,89,0.25);
+      background:rgba(255,255,255,0.72);
+      box-shadow:0 10px 22px rgba(0,0,0,0.04);
+      transition:opacity 0.2s ease;
     }
-
     .photo-frame img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    /* Hide frame in decor-only mode */
+    .card-canvas[data-mode="decor"] .photo-frame{
+      display:none !important;
     }
 
+    /* Decorations cover whole canvas */
     .decor-layer{
-      position: absolute;
-      inset: 0;
-      pointer-events: auto;
+      position:absolute;
+      inset:0;
+      pointer-events:auto;
     }
 
     .sticker{
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      cursor: grab;
-      user-select: none;
-      touch-action: none;
-      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.08));
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      cursor:grab;
+      user-select:none;
+      touch-action:none;
+      filter:drop-shadow(0 8px 10px rgba(0,0,0,0.08));
     }
-    .sticker:active{ cursor: grabbing; }
-
-    .card-canvas[data-mode="decor"] .photo-frame{ display:none; }
+    .sticker:active{cursor:grabbing;}
 
     /* =========================
-       DECORATION CONTROLS (NOT CAPTURED)
+       BUTTONS
        ========================= */
-    .decorate-panel {
-      margin-top: 14px;
-      display: grid;
-      gap: 10px;
-      justify-items: center;
+    .btn-group{
+      margin-top:22px;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
     }
-    .decorate-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+    .btn{
+      background:none;
+      border:1px solid var(--gold);
+      padding:10px 18px;
+      font-family:'Lato',sans-serif;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      font-size:0.7rem;
+      cursor:pointer;
+      transition:0.3s;
+      backdrop-filter:blur(4px);
+      flex:1 1 auto;
+      min-width:120px;
+      max-width:200px;
     }
-    .pill {
-      border: 1px solid rgba(197,160,89,0.55);
-      background: rgba(255,255,255,0.55);
-      backdrop-filter: blur(4px);
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 0.7rem;
-      letter-spacing: 1px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .btn-save{background:var(--gold); color:#fff;}
+    .btn-save:hover{background:var(--deep-green); border-color:var(--deep-green);}
+    .btn-sound{
+      border-color:rgba(197,160,89,0.65);
+      color:var(--deep-green);
+      background:rgba(255,255,255,0.45);
     }
-    .pill input[type="file"] { font-size: 0.65rem; }
-    .pill input[type="range"] { width: 140px; }
+    .btn-sound.active{
+      background:rgba(26,42,29,0.85);
+      color:#fff;
+      border-color:rgba(26,42,29,0.85);
+    }
+
+    /* =========================
+       CONTROLS (NOT CAPTURED)
+       ========================= */
+    .decorate-panel{
+      margin-top:14px;
+      display:grid;
+      gap:10px;
+      justify-items:center;
+    }
+    .decorate-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+    }
+    .pill{
+      border:1px solid rgba(197,160,89,0.55);
+      background:rgba(255,255,255,0.55);
+      backdrop-filter:blur(4px);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:0.7rem;
+      letter-spacing:1px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      max-width:92vw;
+    }
+    .pill input[type="file"]{font-size:0.65rem; max-width:44vw;}
+    .pill input[type="range"]{width:140px; max-width:40vw;}
+    select{font:inherit;}
   </style>
 </head>
 
@@ -454,8 +450,8 @@
   <div class="birds" id="birds"></div>
   <div class="vignette"></div>
 
-  <img src="https://www.transparenttextures.com/patterns/flowers.png" class="botanical top-left" />
-  <img src="https://www.transparenttextures.com/patterns/flowers.png" class="botanical bottom-right" />
+  <img src="https://www.transparenttextures.com/patterns/flowers.png" class="botanical top-left" alt="" />
+  <img src="https://www.transparenttextures.com/patterns/flowers.png" class="botanical bottom-right" alt="" />
 
   <div id="app-container">
     <div id="ritual-screen">
@@ -481,8 +477,8 @@
         <span class="result-isa">ISA Chulalongkorn</span>
         <h2 class="result-theme">Heart to Heart</h2>
 
-        <!-- CARD CANVAS (CAPTURED by html2canvas) -->
-        <div id="cardCanvas" class="card-canvas" data-mode="hybrid">
+        <!-- CAPTURED CANVAS (stickers are clipped here) -->
+        <div id="cardCanvas" class="card-canvas" data-mode="decor">
           <div id="photoFrame" class="photo-frame">
             <img id="userPhoto" alt="Your photo" />
           </div>
@@ -504,18 +500,18 @@
         </div>
       </div>
 
-      <!-- Controls (NOT captured) -->
+      <!-- NOT CAPTURED: controls -->
       <div class="decorate-panel">
         <div class="decorate-row">
           <div class="pill">
             Mode:
             <select id="modeSelect">
-              <option value="hybrid" selected>Mode A — Photo + Emojis</option>
-              <option value="decor">Mode B — Emojis Only</option>
+              <option value="decor" selected>Mode B — Emojis Only</option>
+              <option value="hybrid">Mode A — Photo + Emojis</option>
             </select>
           </div>
 
-          <div class="pill" id="photoInputWrap">
+          <div class="pill" id="photoInputWrap" style="display:none;">
             Add Photo:
             <input id="photoInput" type="file" accept="image/*" />
           </div>
@@ -559,7 +555,7 @@
         </div>
 
         <p style="font-size:0.6rem; opacity:0.55; letter-spacing:1px; margin:0;">
-          Drag to move. Right-click or long-press to delete. Everything is clipped to the card.
+          Tap inside the canvas to place. Drag to move. Right-click or long-press to delete. Stickers are clipped to the card.
         </p>
       </div>
 
@@ -569,7 +565,7 @@
         <button class="btn btn-sound active" id="soundBtn2" type="button">Sound: On</button>
       </div>
 
-      <p style="font-size: 0.6rem; margin-top: 20px; opacity: 0.5; letter-spacing: 1px;">
+      <p style="font-size:0.6rem; margin-top: 16px; opacity:0.5; letter-spacing:1px;">
         Saved to your downloads folder
       </p>
     </div>
@@ -580,7 +576,6 @@
        PETALS
        ========================= */
     const petalsHost = document.getElementById('petals');
-
     function spawnPetals(count = 16) {
       petalsHost.innerHTML = '';
       for (let i = 0; i < count; i++) {
@@ -599,7 +594,6 @@
         petalsHost.appendChild(p);
       }
     }
-
     spawnPetals(18);
     window.addEventListener('resize', () => spawnPetals(window.innerWidth < 480 ? 12 : 18));
 
@@ -636,7 +630,6 @@
     function setSound(on) {
       soundOn = on;
       if (!audioPrimed || !audioCtx || !masterGain) { updateSoundButtons(); return; }
-
       const now = audioCtx.currentTime;
       masterGain.gain.cancelScheduledValues(now);
       masterGain.gain.setValueAtTime(masterGain.gain.value, now);
@@ -682,7 +675,6 @@
 
       osc1.type = "sine";
       osc2.type = "triangle";
-
       filter.type = "bandpass";
       filter.frequency.value = 2600;
       filter.Q.value = 9;
@@ -693,7 +685,6 @@
 
       osc1.frequency.setValueAtTime(base, now);
       osc1.frequency.exponentialRampToValueAtTime(base * sweepUp, now + duration * 0.65);
-
       osc2.frequency.setValueAtTime(base * 0.985, now);
       osc2.frequency.exponentialRampToValueAtTime(base * sweepUp * 1.02, now + duration * 0.65);
 
@@ -721,7 +712,6 @@
       } else {
         filter.connect(gain);
       }
-
       gain.connect(masterGain);
 
       lfo.start(now);
@@ -737,7 +727,7 @@
     updateSoundButtons();
 
     /* =========================
-       BIRDS
+       BIRDS (visual + sound synced)
        ========================= */
     const birdsHost = document.getElementById('birds');
 
@@ -769,7 +759,6 @@
       bird.style.setProperty('--fromY', fromY);
       bird.style.setProperty('--toY', toY);
       bird.style.setProperty('--s', scale);
-
       bird.style.animationDuration = dur + "s";
       bird.style.animationDelay = delay + "s";
       bird.style.opacity = opacity;
@@ -796,11 +785,9 @@
 
       setTimeout(() => {
         pleasantChirp({ pan: entryPan, volume: baseVol });
-
         if (Math.random() > 0.55) {
           setTimeout(() => pleasantChirp({ pan: midPan, volume: baseVol * 0.92 }), (dur * 0.45) * 1000);
         }
-
         if (Math.random() > 0.7) {
           setTimeout(() => pleasantChirp({ pan: entryPan, volume: baseVol * 0.72 }), 220 + Math.random() * 180);
         }
@@ -811,32 +798,30 @@
 
     function startBirdFlights() {
       spawnBird();
-      setInterval(() => {
-        if (Math.random() > 0.35) spawnBird();
-      }, 2200);
+      setInterval(() => { if (Math.random() > 0.35) spawnBird(); }, 2200);
     }
     startBirdFlights();
 
     /* =========================
-       CARDS
+       CARDS + REVEAL
        ========================= */
     const colorPalette = [
-      { name: "Ivory Silk", hex: "#fffdf0", quote: "To love at all is to be vulnerable.", source: "C.S. Lewis", movie: "Shadowlands", book: "The Four Loves" },
-      { name: "Vintage Champagne", hex: "#f5ead0", quote: "Love is not blind; it sees more, not less.", source: "Erich Fromm", movie: "In the Mood for Love", book: "A Lover's Discourse" },
-      { name: "Tudor Rose", hex: "#fce3e3", quote: "Everything that frightens us is something helpless that wants our love.", source: "Rainer Maria Rilke", movie: "The Shape of Water", book: "Letters to a Young Poet" },
-      { name: "English Lavender", hex: "#e8e1f5", quote: "It is not necessary to hurry intimacy.", source: "Anne Carson", movie: "Before Sunset", book: "Eros the Bittersweet" },
-      { name: "Versailles Sage", hex: "#e2ede4", quote: "The world is full of magic things, patiently waiting for our senses to grow sharper.", source: "W.B. Yeats", movie: "Song of the Sea", book: "The Wind Among the Reeds" },
-      { name: "Gilded Moss", hex: "#ecebbd", quote: "The only way to make sense out of change is to plunge into it.", source: "Alan Watts", movie: "Spring, Summer, Fall, Winter... and Spring", book: "The Wisdom of Insecurity" },
-      { name: "Biedermeier Blue", hex: "#e0f0f5", quote: "Loneliness is the poverty of self; solitude is the richness of self.", source: "May Sarton", movie: "Lost in Translation", book: "Journal of a Solitude" },
-      { name: "Old Manor Taupe", hex: "#ede6e1", quote: "Acceptance is a small, quiet room.", source: "Cheryl Strayed", movie: "Nomadland", book: "Tiny Beautiful Things" },
-      { name: "Terracotta Sundial", hex: "#f5e6d3", quote: "Beauty is in things imperfect, impermanent, and incomplete.", source: "Leonard Koren", movie: "Arrietty", book: "The Beauty of the Ordinary" },
-      { name: "Slate Manor", hex: "#e1e6e8", quote: "Love is the extremely difficult realization that something other than oneself is real.", source: "Iris Murdoch", movie: "Eternal Sunshine of the Spotless Mind", book: "The Sovereignty of Good" },
-      { name: "Linen Prayer", hex: "#fcfaf7", quote: "Love is not a relationship between one person and another, but a relationship between a person and love itself.", source: "Søren Kierkegaard", movie: "Still Walking", book: "Works of Love" },
-      { name: "Orchard Ash", hex: "#f0f0f0", quote: "Love, by its very nature, is unworldly.", source: "Hannah Arendt", movie: "A Hidden Life", book: "The Human Condition" },
-      { name: "Cemetery Stone", hex: "#e3e3e3", quote: "To be alone is to be with the world without intermediaries.", source: "Maurice Blanchot", movie: "Taste of Cherry", book: "The Space of Literature" },
-      { name: "Pale Concrete", hex: "#ededeb", quote: "Nothing is missing. Something is simply not added.", source: "Gilles Deleuze", movie: "Columbus", book: "Negotiations" },
-      { name: "Oat Chapel", hex: "#f3eddc", quote: "Love is an act of faith, and whoever is of little faith is also of little love.", source: "Erich Fromm", movie: "Ordet", book: "The Art of Loving" },
-      { name: "Ash Rose", hex: "#e6dede", quote: "Grief is the final manifestation of love.", source: "Joan Didion", movie: "Aftersun", book: "Blue Nights" }
+      { name:"Ivory Silk", hex:"#fffdf0", quote:"To love at all is to be vulnerable.", source:"C.S. Lewis", movie:"Shadowlands", book:"The Four Loves" },
+      { name:"Vintage Champagne", hex:"#f5ead0", quote:"Love is not blind; it sees more, not less.", source:"Erich Fromm", movie:"In the Mood for Love", book:"A Lover's Discourse" },
+      { name:"Tudor Rose", hex:"#fce3e3", quote:"Everything that frightens us is something helpless that wants our love.", source:"Rainer Maria Rilke", movie:"The Shape of Water", book:"Letters to a Young Poet" },
+      { name:"English Lavender", hex:"#e8e1f5", quote:"It is not necessary to hurry intimacy.", source:"Anne Carson", movie:"Before Sunset", book:"Eros the Bittersweet" },
+      { name:"Versailles Sage", hex:"#e2ede4", quote:"The world is full of magic things, patiently waiting for our senses to grow sharper.", source:"W.B. Yeats", movie:"Song of the Sea", book:"The Wind Among the Reeds" },
+      { name:"Gilded Moss", hex:"#ecebbd", quote:"The only way to make sense out of change is to plunge into it.", source:"Alan Watts", movie:"Spring, Summer, Fall, Winter... and Spring", book:"The Wisdom of Insecurity" },
+      { name:"Biedermeier Blue", hex:"#e0f0f5", quote:"Loneliness is the poverty of self; solitude is the richness of self.", source:"May Sarton", movie:"Lost in Translation", book:"Journal of a Solitude" },
+      { name:"Old Manor Taupe", hex:"#ede6e1", quote:"Acceptance is a small, quiet room.", source:"Cheryl Strayed", movie:"Nomadland", book:"Tiny Beautiful Things" },
+      { name:"Terracotta Sundial", hex:"#f5e6d3", quote:"Beauty is in things imperfect, impermanent, and incomplete.", source:"Leonard Koren", movie:"Arrietty", book:"The Beauty of the Ordinary" },
+      { name:"Slate Manor", hex:"#e1e6e8", quote:"Love is the extremely difficult realization that something other than oneself is real.", source:"Iris Murdoch", movie:"Eternal Sunshine of the Spotless Mind", book:"The Sovereignty of Good" },
+      { name:"Linen Prayer", hex:"#fcfaf7", quote:"Love is not a relationship between one person and another, but a relationship between a person and love itself.", source:"Søren Kierkegaard", movie:"Still Walking", book:"Works of Love" },
+      { name:"Orchard Ash", hex:"#f0f0f0", quote:"Love, by its very nature, is unworldly.", source:"Hannah Arendt", movie:"A Hidden Life", book:"The Human Condition" },
+      { name:"Cemetery Stone", hex:"#e3e3e3", quote:"To be alone is to be with the world without intermediaries.", source:"Maurice Blanchot", movie:"Taste of Cherry", book:"The Space of Literature" },
+      { name:"Pale Concrete", hex:"#ededeb", quote:"Nothing is missing. Something is simply not added.", source:"Gilles Deleuze", movie:"Columbus", book:"Negotiations" },
+      { name:"Oat Chapel", hex:"#f3eddc", quote:"Love is an act of faith, and whoever is of little faith is also of little love.", source:"Erich Fromm", movie:"Ordet", book:"The Art of Loving" },
+      { name:"Ash Rose", hex:"#e6dede", quote:"Grief is the final manifestation of love.", source:"Joan Didion", movie:"Aftersun", book:"Blue Nights" }
     ];
 
     const deck = document.getElementById('deck-container');
@@ -932,10 +917,11 @@
     createDeck();
 
     /* =========================
-       MODE + CANVAS STICKERS (Fidelity)
+       MODE + PHOTO + STICKERS (Fidelity)
        ========================= */
     const cardCanvas = document.getElementById("cardCanvas");
     const decorLayer = document.getElementById("decorLayer");
+    const photoFrame = document.getElementById("photoFrame");
     const userPhoto  = document.getElementById("userPhoto");
 
     const modeSelect = document.getElementById("modeSelect");
@@ -947,25 +933,7 @@
     const placeStickerBtn = document.getElementById("placeStickerBtn");
     const clearStickersBtn = document.getElementById("clearStickersBtn");
 
-    function setMode(mode){
-      cardCanvas.dataset.mode = mode;
-      const showPhoto = mode === "hybrid";
-      photoInputWrap.style.display = showPhoto ? "inline-flex" : "none";
-      if (!showPhoto){
-        userPhoto.removeAttribute("src");
-      }
-    }
-    modeSelect.addEventListener("change", (e) => setMode(e.target.value));
-    setMode(modeSelect.value);
-
-    if (photoInput) {
-      photoInput.addEventListener("change", (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        userPhoto.src = URL.createObjectURL(file);
-      });
-    }
-
+    // Store stickers in % for cross-device fidelity
     const stickers = []; // {id, emoji, xPct, yPct, sizePx}
 
     function pctFromPx(x, y){
@@ -977,6 +945,7 @@
       return { x: xPct * r.width, y: yPct * r.height };
     }
 
+    // clamp sticker center to canvas bounds so it cannot leave card borders
     function clampToCanvas(x, y, el){
       const host = decorLayer.getBoundingClientRect();
       const rect = el.getBoundingClientRect();
@@ -994,37 +963,30 @@
       };
     }
 
-    function addStickerAtPx(x, y){
-      const emoji = stickerSelect?.value || "🩷";
-      const size = Number(stickerSize?.value || 34);
+    function setMode(mode){
+      cardCanvas.dataset.mode = mode;
 
-      const el = document.createElement("div");
-      el.className = "sticker";
-      el.textContent = emoji;
-      el.style.fontSize = size + "px";
-      decorLayer.appendChild(el);
+      const showPhoto = mode === "hybrid";
+      photoInputWrap.style.display = showPhoto ? "inline-flex" : "none";
 
-      const clamped = clampToCanvas(x, y, el);
-      el.style.left = clamped.x + "px";
-      el.style.top  = clamped.y + "px";
-
-      const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
-
-      const id = (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
-      stickers.push({ id, emoji, xPct, yPct, sizePx: size });
-
-      el.dataset.id = id;
-
-      el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(id); });
-
-      let pressTimer = null;
-      el.addEventListener("pointerdown", () => { pressTimer = setTimeout(() => removeSticker(id), 550); });
-      el.addEventListener("pointerup", () => clearTimeout(pressTimer));
-      el.addEventListener("pointercancel", () => clearTimeout(pressTimer));
-      el.addEventListener("pointermove", () => clearTimeout(pressTimer));
-
-      makeDraggable(el, id);
+      if (!showPhoto){
+        // decor mode: remove photo entirely
+        if (userPhoto) {
+          userPhoto.removeAttribute("src");
+        }
+        if (photoInput) photoInput.value = "";
+      }
     }
+
+    modeSelect.addEventListener("change", (e) => setMode(e.target.value));
+    setMode(modeSelect.value);
+
+    // Photo upload (works only in hybrid mode, but safe regardless)
+    photoInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      userPhoto.src = URL.createObjectURL(file);
+    });
 
     function removeSticker(id){
       const idx = stickers.findIndex(s => s.id === id);
@@ -1039,16 +1001,15 @@
       el.addEventListener("pointerdown", (e) => {
         dragging = true;
         el.setPointerCapture(e.pointerId);
-
         const r = el.getBoundingClientRect();
         offsetX = e.clientX - r.left - r.width/2;
         offsetY = e.clientY - r.top  - r.height/2;
-
         e.stopPropagation();
       });
 
       el.addEventListener("pointermove", (e) => {
         if (!dragging) return;
+
         const host = decorLayer.getBoundingClientRect();
         const xRaw = (e.clientX - host.left) - offsetX;
         const yRaw = (e.clientY - host.top)  - offsetY;
@@ -1069,6 +1030,37 @@
       el.addEventListener("pointercancel", () => dragging = false);
     }
 
+    function addStickerAtPx(x, y){
+      const emoji = stickerSelect.value || "🩷";
+      const size = Number(stickerSize.value || 34);
+
+      const el = document.createElement("div");
+      el.className = "sticker";
+      el.textContent = emoji;
+      el.style.fontSize = size + "px";
+      decorLayer.appendChild(el);
+
+      const clamped = clampToCanvas(x, y, el);
+      el.style.left = clamped.x + "px";
+      el.style.top  = clamped.y + "px";
+
+      const { xPct, yPct } = pctFromPx(clamped.x, clamped.y);
+      const id = (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+      stickers.push({ id, emoji, xPct, yPct, sizePx: size });
+      el.dataset.id = id;
+
+      // delete: right click / long press
+      el.addEventListener("contextmenu", (ev) => { ev.preventDefault(); removeSticker(id); });
+      let pressTimer = null;
+      el.addEventListener("pointerdown", () => { pressTimer = setTimeout(() => removeSticker(id), 550); });
+      el.addEventListener("pointerup", () => clearTimeout(pressTimer));
+      el.addEventListener("pointercancel", () => clearTimeout(pressTimer));
+      el.addEventListener("pointermove", () => clearTimeout(pressTimer));
+
+      makeDraggable(el, id);
+    }
+
+    // tap inside canvas to place
     decorLayer.addEventListener("click", (e) => {
       if (e.target.classList?.contains("sticker")) return;
       const r = decorLayer.getBoundingClientRect();
