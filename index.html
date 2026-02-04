@@ -1012,6 +1012,17 @@ const clearStickersBtn = document.getElementById("clearStickersBtn");
 
 const stickers = [];
 
+let activeStickerId = null;
+
+function setActiveSticker(id) {
+  activeStickerId = id;
+  // optional visual: highlight active
+  decorLayer.querySelectorAll(".sticker").forEach(el => {
+    el.style.outline = (el.dataset.id === id) ? "1px dashed rgba(197,160,89,0.55)" : "none";
+    el.style.outlineOffset = "6px";
+  });
+}
+
 function setMode(mode) {
   const isHybrid = mode === "hybrid";
   cardCanvas.dataset.mode = mode;
@@ -1121,16 +1132,20 @@ function applyTransform(el, s) {
 function makeTransformable(el, s) {
   let dragging = false;
 
-  // desktop rotation mode: hold ALT and drag
-  let rotateMode = false;
+  // desktop modes
+  let rotateMode = false; // ALT + drag
+  let scaleMode = false;  // SHIFT + drag (vertical)
+
   let startAngle = 0;
   let startRot = 0;
 
-  // two-finger gesture
+  let startY = 0;
+  let startScale = 1;
+
+  // two-finger gesture (mobile)
   let gestureActive = false;
   let startDist = 0;
   let startGestureAngle = 0;
-  let startScale = 1;
 
   const getCenter = () => {
     const r = el.getBoundingClientRect();
@@ -1144,7 +1159,11 @@ function makeTransformable(el, s) {
   function distBetween(p1, p2) {
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
-    return Math.sqrt(dx*dx + dy*dy);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function clampScale(v) {
+    return Math.max(0.35, Math.min(3.2, v));
   }
 
   function onDown(e) {
@@ -1152,13 +1171,21 @@ function makeTransformable(el, s) {
     e.stopPropagation();
     el.setPointerCapture?.(e.pointerId);
 
+    setActiveSticker(s.id);
+
     dragging = true;
     rotateMode = e.altKey === true;
+    scaleMode = e.shiftKey === true;
 
     if (rotateMode) {
       const { cx, cy } = getCenter();
       startAngle = angleBetween({ x: cx, y: cy }, { x: e.clientX, y: e.clientY });
       startRot = s.rot;
+    }
+
+    if (scaleMode) {
+      startY = e.clientY;
+      startScale = s.scale;
     }
 
     el.style.cursor = "grabbing";
@@ -1169,6 +1196,16 @@ function makeTransformable(el, s) {
 
     const host = decorLayer.getBoundingClientRect();
 
+    // SHIFT-drag = resize (no moving)
+    if (scaleMode) {
+      const dy = (startY - e.clientY); // up = bigger
+      const factor = 1 + (dy / 220);   // feel-tuned
+      s.scale = clampScale(startScale * factor);
+      applyTransform(el, s);
+      return;
+    }
+
+    // ALT-drag = rotate
     if (rotateMode) {
       const { cx, cy } = getCenter();
       const a = angleBetween({ x: cx, y: cy }, { x: e.clientX, y: e.clientY });
@@ -1177,6 +1214,7 @@ function makeTransformable(el, s) {
       return;
     }
 
+    // normal drag = move
     const x = e.clientX - host.left;
     const y = e.clientY - host.top;
     const clamped = clampToCanvas(x, y, el);
@@ -1190,15 +1228,30 @@ function makeTransformable(el, s) {
   function onUp(e) {
     dragging = false;
     rotateMode = false;
+    scaleMode = false;
     el.releasePointerCapture?.(e.pointerId);
     el.style.cursor = "grab";
   }
 
-  // Multi-touch gesture: rotate + pinch scale (iOS/iPad)
+  // Desktop wheel resize (hover the sticker)
+  function onWheel(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveSticker(s.id);
+
+    const delta = -e.deltaY; // wheel up => positive
+    const step = delta > 0 ? 1.08 : 0.92;
+    s.scale = clampScale(s.scale * step);
+    applyTransform(el, s);
+  }
+
+  // Mobile: pinch + rotate
   function onTouchStart(e) {
     if (e.touches.length === 2) {
       e.preventDefault();
       e.stopPropagation();
+      setActiveSticker(s.id);
+
       gestureActive = true;
 
       const p1 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -1206,6 +1259,7 @@ function makeTransformable(el, s) {
 
       startDist = distBetween(p1, p2);
       startGestureAngle = angleBetween(p1, p2);
+
       startScale = s.scale;
       startRot = s.rot;
     }
@@ -1221,11 +1275,9 @@ function makeTransformable(el, s) {
     const d = distBetween(p1, p2);
     const a = angleBetween(p1, p2);
 
-    // scale (clamp scale)
     const ratio = d / Math.max(1, startDist);
-    s.scale = Math.max(0.4, Math.min(3, startScale * ratio));
+    s.scale = clampScale(startScale * ratio);
 
-    // rotate
     s.rot = startRot + (a - startGestureAngle);
 
     applyTransform(el, s);
@@ -1239,9 +1291,13 @@ function makeTransformable(el, s) {
   window.addEventListener("pointermove", onMove);
   window.addEventListener("pointerup", onUp);
 
+  // IMPORTANT: passive:false so we can prevent page scrolling on wheel
+  el.addEventListener("wheel", onWheel, { passive: false });
+
   el.addEventListener("touchstart", onTouchStart, { passive: false });
   el.addEventListener("touchmove", onTouchMove, { passive: false });
   el.addEventListener("touchend", onTouchEnd);
+
   el.style.cursor = "grab";
 }
 
