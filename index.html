@@ -509,7 +509,21 @@
     .pill input[type="file"]{font-size:0.65rem; max-width:44vw;}
     .pill input[type="range"]{width:140px; max-width:40vw;}
     select{font:inherit;}
-  </style>
+
+/* ===== MODE B: ABSOLUTELY NO BORDER, NO FRAME ===== */
+.card-canvas[data-mode="decor"]{
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Kill any pseudo-borders / overlays */
+.card-canvas[data-mode="decor"]::before,
+.card-canvas[data-mode="decor"]::after{
+  content: none !important;
+}
+
+</style>
 </head>
 
 <body>
